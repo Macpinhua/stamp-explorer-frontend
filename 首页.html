@@ -334,6 +334,30 @@
                     <i class="fa fa-bars"></i>
                 </button>
                 
+                <!-- 用户状态显示 -->
+                <div id="user-auth-section" class="hidden md:flex items-center space-x-3">
+                    <!-- 已登录用户显示 -->
+                    <div id="logged-in-user" class="hidden items-center space-x-3">
+                        <div class="flex items-center text-white">
+                            <i class="fa fa-user-circle text-xl mr-2"></i>
+                            <span id="user-display-name" class="font-medium"></span>
+                        </div>
+                        <button id="user-logout-btn" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full text-sm transition-colors">
+                            退出
+                        </button>
+                    </div>
+                    
+                    <!-- 未登录用户显示 -->
+                    <div id="guest-user" class="flex items-center space-x-2">
+                        <button id="login-btn" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            登录
+                        </button>
+                        <button id="register-btn" class="bg-white text-primary px-4 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors">
+                            注册
+                        </button>
+                    </div>
+                </div>
+
                 <!-- 桌面端导航 -->
                 <nav class="hidden md:flex space-x-2">
                     <button class="nav-item nav-item-active px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center"
@@ -373,6 +397,32 @@
             
             <!-- 移动端导航菜单 -->
             <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <!-- 移动端用户状态 -->
+                <div id="mobile-user-auth" class="mb-4 pb-4 border-b border-white/20">
+                    <!-- 已登录用户 -->
+                    <div id="mobile-logged-in-user" class="hidden">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center text-white">
+                                <i class="fa fa-user-circle text-xl mr-2"></i>
+                                <span id="mobile-user-display-name" class="font-medium"></span>
+                            </div>
+                            <button id="mobile-logout-btn" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full text-sm transition-colors">
+                                退出
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 未登录用户 -->
+                    <div id="mobile-guest-user" class="flex space-x-2 mb-3">
+                        <button id="mobile-login-btn" class="flex-1 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            登录
+                        </button>
+                        <button id="mobile-register-btn" class="flex-1 bg-white text-primary px-4 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors">
+                            注册
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="flex flex-col space-y-2">
                     <button class="nav-item nav-item-active px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center"
                             data-target="home-page">
@@ -718,8 +768,262 @@
         
         <!-- 新点提交页面 JavaScript 交互逻辑 -->
         <script>
-            // 等待DOM加载完成
+            // 页面初始化
             document.addEventListener('DOMContentLoaded', function() {
+                initializeApp();
+                bindNavigationEvents();
+                bindAuthEvents();
+                checkUserStatus();
+            });
+            
+            // 应用初始化
+            function initializeApp() {
+                // 初始化图表等其他功能
+                initializeCharts();
+            }
+            
+            // 绑定导航事件
+            function bindNavigationEvents() {
+                // 页面切换逻辑保持原有功能
+                const navItems = document.querySelectorAll('[data-target]');
+                navItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const target = this.getAttribute('data-target');
+                        showPage(target);
+                    });
+                });
+            
+                // 移动端菜单切换
+                const mobileMenuButton = document.getElementById('mobile-menu-button');
+                const mobileMenu = document.getElementById('mobile-menu');
+                        
+                if (mobileMenuButton && mobileMenu) {
+                    mobileMenuButton.addEventListener('click', function() {
+                        mobileMenu.classList.toggle('hidden');
+                    });
+                }
+            }
+            
+            // 绑定认证事件
+            function bindAuthEvents() {
+                // 登录按钮事件
+                document.getElementById('login-btn')?.addEventListener('click', () => showModal('login-modal'));
+                document.getElementById('mobile-login-btn')?.addEventListener('click', () => showModal('login-modal'));
+                        
+                // 注册按钮事件
+                document.getElementById('register-btn')?.addEventListener('click', () => showModal('register-modal'));
+                document.getElementById('mobile-register-btn')?.addEventListener('click', () => showModal('register-modal'));
+                        
+                // 模态框关闭事件
+                document.getElementById('close-login-modal')?.addEventListener('click', () => hideModal('login-modal'));
+                document.getElementById('close-register-modal')?.addEventListener('click', () => hideModal('register-modal'));
+                        
+                // 模态框背景点击关闭
+                document.getElementById('login-modal')?.addEventListener('click', function(e) {
+                    if (e.target === this) hideModal('login-modal');
+                });
+                document.getElementById('register-modal')?.addEventListener('click', function(e) {
+                    if (e.target === this) hideModal('register-modal');
+                });
+                        
+                // 切换模态框
+                document.getElementById('switch-to-register')?.addEventListener('click', () => {
+                    hideModal('login-modal');
+                    showModal('register-modal');
+                });
+                document.getElementById('switch-to-login')?.addEventListener('click', () => {
+                    hideModal('register-modal');
+                    showModal('login-modal');
+                });
+                        
+                // 退出登录
+                document.getElementById('user-logout-btn')?.addEventListener('click', logout);
+                document.getElementById('mobile-logout-btn')?.addEventListener('click', logout);
+                        
+                // 表单提交事件
+                document.getElementById('login-form')?.addEventListener('submit', handleLogin);
+                document.getElementById('register-form')?.addEventListener('submit', handleRegister);
+            }
+            
+            // 检查用户状态
+            async function checkUserStatus() {
+                if (apiClient.isAuthenticated()) {
+                    try {
+                        const user = await apiClient.getCurrentUser();
+                        showLoggedInUser(user);
+                    } catch (error) {
+                        // Token无效，清除认证状态
+                        apiClient.logout();
+                        showGuestUser();
+                    }
+                } else {
+                    showGuestUser();
+                }
+            }
+            
+            // 显示已登录用户
+            function showLoggedInUser(user) {
+                // 桌面端显示
+                document.getElementById('user-display-name').textContent = user.username;
+                document.getElementById('logged-in-user').classList.remove('hidden');
+                document.getElementById('guest-user').classList.add('hidden');
+                document.getElementById('user-auth-section').classList.remove('hidden');
+                        
+                // 移动端显示
+                document.getElementById('mobile-user-display-name').textContent = user.username;
+                document.getElementById('mobile-logged-in-user').classList.remove('hidden');
+                document.getElementById('mobile-guest-user').classList.add('hidden');
+                document.getElementById('mobile-user-auth').classList.remove('hidden');
+            }
+            
+            // 显示访客用户
+            function showGuestUser() {
+                // 桌面端显示
+                document.getElementById('logged-in-user').classList.add('hidden');
+                document.getElementById('guest-user').classList.remove('hidden');
+                document.getElementById('user-auth-section').classList.remove('hidden');
+                        
+                // 移动端显示
+                document.getElementById('mobile-logged-in-user').classList.add('hidden');
+                document.getElementById('mobile-guest-user').classList.remove('hidden');
+                document.getElementById('mobile-user-auth').classList.remove('hidden');
+            }
+            
+            // 显示模态框
+            function showModal(modalId) {
+                const modal = document.getElementById(modalId);
+                const modalContent = modal.querySelector('div');
+                        
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modalContent.style.transform = 'scale(1)';
+                    modalContent.style.opacity = '1';
+                }, 10);
+            }
+            
+            // 隐藏模态框
+            function hideModal(modalId) {
+                const modal = document.getElementById(modalId);
+                const modalContent = modal.querySelector('div');
+                        
+                modalContent.style.transform = 'scale(0.95)';
+                modalContent.style.opacity = '0';
+                        
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+            
+            // 处理登录
+            async function handleLogin(e) {
+                e.preventDefault();
+                        
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+                        
+                // 显示加载状态
+                const loginBtnText = document.getElementById('login-btn-text');
+                const loginLoading = document.getElementById('login-loading');
+                loginBtnText.textContent = '登录中...';
+                loginLoading.classList.remove('hidden');
+                        
+                try {
+                    await apiClient.login({ username, password });
+                    showMessage('登录成功！', 'success');
+                    hideModal('login-modal');
+                            
+                    // 重置表单
+                    document.getElementById('login-form').reset();
+                            
+                    // 更新用户状态
+                    const user = await apiClient.getCurrentUser();
+                    showLoggedInUser(user);
+                            
+                } catch (error) {
+                    showMessage('登录失败: ' + error.message, 'error');
+                } finally {
+                    // 恢复按钮状态
+                    loginBtnText.textContent = '登录账户';
+                    loginLoading.classList.add('hidden');
+                }
+            }
+            
+            // 处理注册
+            async function handleRegister(e) {
+                e.preventDefault();
+                        
+                const userData = {
+                    email: document.getElementById('reg-email').value,
+                    username: document.getElementById('reg-username').value,
+                    full_name: document.getElementById('reg-fullname').value,
+                    password: document.getElementById('reg-password').value
+                };
+                        
+                // 显示加载状态
+                const registerBtnText = document.getElementById('register-btn-text');
+                const registerLoading = document.getElementById('register-loading');
+                registerBtnText.textContent = '注册中...';
+                registerLoading.classList.remove('hidden');
+                        
+                try {
+                    await apiClient.register(userData);
+                    showMessage('注册成功！请登录', 'success');
+                    hideModal('register-modal');
+                            
+                    // 重置表单
+                    document.getElementById('register-form').reset();
+                            
+                    // 自动打开登录模态框
+                    setTimeout(() => {
+                        showModal('login-modal');
+                    }, 1000);
+                            
+                } catch (error) {
+                    showMessage('注册失败: ' + error.message, 'error');
+                } finally {
+                    // 恢复按钮状态
+                    registerBtnText.textContent = '注册账户';
+                    registerLoading.classList.add('hidden');
+                }
+            }
+            
+            // 退出登录
+            function logout() {
+                apiClient.logout();
+                showGuestUser();
+                showMessage('已退出登录', 'info');
+            }
+            
+            // 显示消息提示
+            function showMessage(message, type = 'info') {
+                const toast = document.getElementById('toast-message');
+                const toastText = document.getElementById('toast-text');
+                        
+                toastText.textContent = message;
+                        
+                // 设置颜色
+                toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transform translate-y-4 opacity-0 transition-all duration-300 ` +
+                    (type === 'success' ? 'bg-green-500' : 
+                     type === 'error' ? 'bg-red-500' : 
+                     'bg-blue-500') + ' text-white';
+                        
+                toast.classList.remove('hidden');
+                        
+                // 显示动画
+                setTimeout(() => {
+                    toast.style.transform = 'translateY(0)';
+                    toast.style.opacity = '1';
+                }, 10);
+                        
+                // 自动隐藏
+                setTimeout(() => {
+                    toast.style.transform = 'translateY(1rem)';
+                    toast.style.opacity = '0';
+                    setTimeout(() => {
+                        toast.classList.add('hidden');
+                    }, 300);
+                }, 3000);
+            }
                 const submitForm = document.querySelector('#new-stamp-location-form');
                 const stampImages = document.getElementById('stamp-images');
                 const stampImagePreview = document.getElementById('stamp-image-preview');
@@ -5418,6 +5722,97 @@
             }
         }
     </script>
+
+    <!-- 登录模态框 -->
+    <div id="login-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 opacity-0">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">用户登录</h3>
+                    <button id="close-login-modal" class="text-gray-400 hover:text-gray-600 text-2xl">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">用户名或邮箱</label>
+                        <input type="text" id="login-username" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">密码</label>
+                        <input type="password" id="login-password" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                        <span id="login-btn-text">登录账户</span>
+                        <i id="login-loading" class="fa fa-spinner fa-spin ml-2 hidden"></i>
+                    </button>
+                </form>
+                
+                <div class="mt-4 text-center text-sm text-gray-600">
+                    还没有账户？<button id="switch-to-register" class="text-primary font-medium hover:underline">立即注册</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册模态框 -->
+    <div id="register-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 opacity-0">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">用户注册</h3>
+                    <button id="close-register-modal" class="text-gray-400 hover:text-gray-600 text-2xl">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="register-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">邮箱地址</label>
+                        <input type="email" id="reg-email" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
+                        <input type="text" id="reg-username" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">真实姓名（可选）</label>
+                        <input type="text" id="reg-fullname" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">密码</label>
+                        <input type="password" id="reg-password" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-secondary hover:bg-secondary/90 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                        <span id="register-btn-text">注册账户</span>
+                        <i id="register-loading" class="fa fa-spinner fa-spin ml-2 hidden"></i>
+                    </button>
+                </form>
+                
+                <div class="mt-4 text-center text-sm text-gray-600">
+                    已有账户？<button id="switch-to-login" class="text-primary font-medium hover:underline">立即登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    <div id="toast-message" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden transform translate-y-4 opacity-0 transition-all duration-300">
+        <span id="toast-text"></span>
+    </div>
 
 </body>
 </html>
