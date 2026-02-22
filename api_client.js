@@ -165,7 +165,7 @@ class ApiClient {
 }
 
 // 创建全局API客户端实例
-const apiClient = new ApiClient('https://stamp-explorer.vercel.app');
+const apiClient = new ApiClient('https://stamp-explorer.vercel.app/api');
 
 // 导出以便在其他文件中使用
 window.ApiClient = ApiClient;
