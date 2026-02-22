@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集章点反馈 - 集章地点地图导航与印章资源探索软件</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366F1', // 主色调 - 紫色
+                        secondary: '#EC4899', // 辅助色 - 粉色
+                        accent: '#10B981', // 强调色 - 绿色
+                        neutral: '#1F2937', // 中性色 - 深灰
+                        light: '#F9FAFB', // 浅色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .nav-gradient {
+                background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
+            }
+            .bg-pattern {
+                background-color: #f8fafc;
+                position: relative;
+                overflow: hidden;
+            }
+            .bg-pattern::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image: radial-gradient(#6366F1 1px, transparent 1px),
+                                 radial-gradient(#EC4899 1px, transparent 1px);
+                background-size: 50px 50px;
+                background-position: 0 0, 25px 25px;
+                animation: moveBackground 60s linear infinite;
+                z-index: 0;
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            /* 模态框动画效果 */
+            @keyframes moveBackground {
+                0% {
+                    background-position: 0 0, 25px 25px;
+                }
+                100% {
+                    background-position: 100px 100px, 125px 125px;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="font-sans text-neutral">
+    <!-- 导航栏 -->
+    <header class="nav-gradient nav-decoration sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between py-4">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="bg-white rounded-full p-2 mr-3 shadow-lg">
+                        <i class="fa fa-map-marker text-primary text-2xl"></i>
+                    </div>
+                    <h1 class="text-white text-2xl md:text-3xl font-bold text-shadow">
+                        集章地点地图导航
+                    </h1>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-button" class="md:hidden text-white text-xl focus:outline-none">
+                    <i class="fa fa-bars"></i>
+                </button>
+                
+                <!-- 桌面端导航 -->
+                <nav class="hidden md:flex space-x-2">
+                    <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html'">
+                        <i class="fa fa-home mr-2"></i>首页
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html#map-page'">
+                        <i class="fa fa-map mr-2"></i>集章地图
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html#stamps-page'">
+                        <i class="fa fa-certificate mr-2"></i>印章资源库
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='统计分析.html'">
+                        <i class="fa fa-bar-chart mr-2"></i>统计分析
+                    </button>
+                    <button class="nav-item nav-item-active px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章点反馈.html'">
+                        <i class="fa fa-comment mr-2"></i>集章点反馈
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='新点提交.html'">
+                        <i class="fa fa-plus-circle mr-2"></i>新点提交
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='个人账户.html'">
+                        <i class="fa fa-user mr-2"></i>个人账户
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- 移动端导航菜单 -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-2">
+                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html'">
+                        <i class="fa fa-home mr-3"></i>首页
+                    </button>
+                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html#map-page'">
+                        <i class="fa fa-map mr-3"></i>集章地图
+                    </button>
+                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html#stamps-page'">
+                        <i class="fa fa-certificate mr-3"></i>印章资源库
+                    </button>
+                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='统计分析.html'">
+                        <i class="fa fa-bar-chart mr-3"></i>统计分析
+                    </button>
+                    <button class="nav-item nav-item-active px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章点反馈.html'">
+                        <i class="fa fa-comment mr-3"></i>集章点反馈
+                    </button>
+                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='新点提交.html'">
+                        <i class="fa fa-plus-circle mr-3"></i>新点提交
+                    </button>
+                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='个人账户.html'">
+                        <i class="fa fa-user mr-3"></i>个人账户
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 集章点反馈页面 -->
+        <section id="feedback-page" class="page-container active">
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center">
+                <i class="fa fa-comment text-primary mr-2"></i>集章点反馈
+            </h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 反馈表单 --<div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                        <h3 class="text-xl font-bold mb-4">提交反馈
+                            <span class="text-xs font-normal text-gray-500 ml-2">帮助我们改进集章体验</span>
+                        </h3>
+                        <form id="feedback-form" class="space-y-4">
+                            <div class="form-group">
+                                <label for="stamp-location" class="block text-sm font-medium text-gray-700 mb-1">集章点名称*</label>
+                                <input type="text" id="stamp-location" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                       placeholder="请输入集章点名称"
+                                       required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="feedback-type" class="block text-sm font-medium text-gray-700 mb-1">反馈类型*</label>
+                                <select id="feedback-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                        required>
+                                    <option value="">请选择反馈类型</option>
+                                    <option value="location-error">地点信息错误
+                                    <option value="stamp-missing">印章缺失
+                                    <option value="stamp-changed">印章已更换
+                                    <option value="service-issue">服务问题
+                                    <option value="other">其他问题
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="feedback-content" class="block text-sm font-medium text-gray-700 mb-1">反馈内容*</label>
+                                <textarea id="feedback-content" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                          placeholder="请详细描述您遇到的问题"
+                                          required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">上传图片 (可选)</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary transition-colors cursor-pointer"
+                                     id="image-upload-area">
+                                    <input type="file" id="image-upload" class="hidden" accept="image/*"
+                                           multiple>
+                                    <i class="fa fa-upload text-gray-400 text-3xl mb-2"></i>
+                                    <p class="text-sm text-gray-500">点击或拖拽图片到此处上传
+                                        <span class="block text-xs mt-1">最多3张，单张不超过5MB</span>
+                                    </p>
+                                </div>
+                                <div id="image-preview-container" class="mt-3 grid grid-cols-3 gap-2 hidden">
+                                    <!-- 预览图片会在这里动态添加 --</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                           required>
+                                    <span class="ml-2 block text-sm text-gray-700">
+                                        我确认提供的信息真实有效
+                                    </span>
+                                </label>
+                            </div>
+
+                            <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center">
+                                <i class="fa fa-paper-plane mr-2"></i>
+                                提交反馈
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold mb-4">反馈须知
+                        </span>
+                        <div class="space-y-3 text-sm text-gray-600">
+                            <p class="flex items-start">
+                                <i class="fa fa-info-circle text-primary mt-0.5 mr-2"></i>
+                                <span>我们会在24小时内处理您的反馈信息，感谢您的支持和理解。</span>
+                            </p>
+                            <p class="flex items-start">
+                                <i class="fa fa-check-circle text-accent mt-0.5 mr-2"></i>
+                                <span>提供准确的地点信息和清晰的图片可以帮助我们更快地解决问题。</span>
+                            </p>
+                            <p class="flex items-start">
+                                <i class="fa fa-exclamation-triangle text-yellow-500 mt-0.5 mr-2"></i>
+                                <span>恶意提交虚假信息可能会影响您的账号使用权限，请提供真实有效的信息。</span>
+                            </p>
+                            <p class="flex items-start">
+                                <i class="fa fa-question-circle text-secondary mt-0.5 mr-2"></i>
+                                <span>如有紧急问题，可通过客服热线：400-123-4567 联系我们。</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 反馈列表 --<div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold">最新反馈
+                                <span class="text-xs font-normal text-gray-500 ml-2">查看其他用户的反馈和回复</span>
+                            </h3>
+                            <div class="relative">
+                                <input type="text" id="search-feedback" class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                       placeholder="搜索反馈内容...">
+                                <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <div class="feedback-list space-y-4">
+                            <!-- 反馈项目 1 -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary/30 hover:bg-primary/5 transition-colors">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h4 class="font-medium text-lg">中央图书馆
+                                        <span class="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">已解决
+                                    </span>
+                                </h4>
+                                <p class="text-sm text-gray-500">反馈时间：2025-11-15 10:23 | 类型：印章缺失
+                                </span>
+                                </p>
+                            </span>
+                            </p>
+                            <div class="mb-3">
+                                <p class="text-gray-700">今天去了中央图书馆，发现印章机已经坏了，无法盖章。希望能尽快修复，谢谢！</p>
+                                <div class="mt-2 grid grid-cols-3 gap-2">
+                                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                        <img src="https://picsum.photos/id/1002/200/200" alt="反馈图片" class="w-full h-full object-cover">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-sm">
+                                <div class="flex items-center mb-1">
+                                    <span class="font-medium text-primary mr-2">官方回复：</span>
+                                    <span class="text-gray-500 text-xs">2025-11-15 15:42</span>
+                                </div>
+                                <p class="text-gray-700">感谢您的反馈！我们已经联系了中央图书馆，印章机已修复并正常使用。给您带来的不便，深表歉意。</p>
+                            </div>
+                        </div>
+
+                        <!-- 反馈项目 2 -->
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-primary/30 hover:bg-primary/5 transition-colors">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-medium text-lg">星空咖啡工坊
+                                    <span class="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">处理中
+                                    </span>
+                                </h4>
+                                <p class="text-sm text-gray-500">反馈时间：2025-11-14 16:45 | 类型：地点信息错误
+                                </span>
+                                </p>
+                            </span>
+                            </p>
+                            <div class="mb-3">
+                                <p class="text-gray-700">这家咖啡店的营业时间信息有误，实际营业时间是10:00-22:00，不是9:00-21:00，请更新一下。</p>
+                            </div>
+                        </div>
+
+                        <!-- 反馈项目 3 -->
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-primary/30 hover:bg-primary/5 transition-colors">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-medium text-lg">历史博物馆
+                                    <span class="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">已解决
+                                    </span>
+                                </h4>
+                                <p class="text-sm text-gray-500">反馈时间：2025-11-10 09:30 | 类型：印章已更换
+                                </span>
+                                </p>
+                            </span>
+                            </p>
+                            <div class="mb-3">
+                                <p class="text-gray-700">历史博物馆更换了新的印章图案，现在是一个更精美的历史建筑轮廓设计。建议更新印章库中的图片。</p>
+                                <div class="mt-2 grid grid-cols-3 gap-2">
+                                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                        <img src="https://youke1.picui.cn/s1/2025/11/17/691af9d9b8bad.png" alt="新印章图片" class="w-full h-full object-cover">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-sm">
+                                <div class="flex items-center mb-1">
+                                    <span class="font-medium text-primary mr-2">官方回复：</span>
+                                    <span class="text-gray-500 text-xs">2025-11-11 14:20</span>
+                                </div>
+                                <p class="text-gray-700">感谢您的反馈！我们已经更新了历史博物馆的印章图片。新印章确实非常精美，感谢您的分享。</p>
+                            </div>
+                        </div>
+
+                        <!-- 加载更多按钮 -->
+                        <div class="text-center mt-6">
+                            <button id="load-more-feedback" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center mx-auto">
+                                <i class="fa fa-refresh mr-2"></i>
+                                加载更多
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 图片上传预览
+        const imageUploadArea = document.getElementById('image-upload-area');
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+
+        imageUploadArea.addEventListener('click', () => {
+            imageUpload.click();
+        });
+
+        imageUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.add('border-primary');
+        });
+
+        imageUploadArea.addEventListener('dragleave', () => {
+            imageUploadArea.classList.remove('border-primary');
+        });
+
+        imageUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.remove('border-primary');
+            
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        imageUpload.addEventListener('change', () => {
+            if (imageUpload.files.length) {
+                handleFiles(imageUpload.files);
+            }
+        });
+
+        function handleFiles(files) {
+            // 最多显示3张图片
+            const filesToProcess = Array.from(files).slice(0, 3);
+            imagePreviewContainer.innerHTML = '';
+            imagePreviewContainer.classList.remove('hidden');
+            
+            filesToProcess.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const previewWrapper = document.createElement('div');
+                    previewWrapper.className = 'relative aspect-square bg-gray-100 rounded-lg overflow-hidden';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-full object-cover';
+                    img.alt = `上传图片 ${index + 1}`;
+                    
+                    const removeButton = document.createElement('button');
+                    removeButton.className = 'absolute top-1 right-1 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors';
+                    removeButton.innerHTML = '<i class="fa fa-times text-xs"></i>';
+                    removeButton.onclick = () => {
+                        previewWrapper.remove();
+                        if (imagePreviewContainer.children.length === 0) {
+                            imagePreviewContainer.classList.add('hidden');
+                        }
+                    };
+                    
+                    previewWrapper.appendChild(img);
+                    previewWrapper.appendChild(removeButton);
+                    imagePreviewContainer.appendChild(previewWrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 提交反馈表单
+        const feedbackForm = document.getElementById('feedback-form');
+        feedbackForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // 简单的表单验证
+            const stampLocation = document.getElementById('stamp-location').value;
+            const feedbackType = document.getElementById('feedback-type').value;
+            const feedbackContent = document.getElementById('feedback-content').value;
+            
+            if (!stampLocation || !feedbackType || !feedbackContent) {
+                alert('请填写所有必填字段');
+                return;
+            }
+            
+            // 模拟提交成功
+            alert('反馈提交成功！感谢您的反馈，我们会尽快处理。');
+            feedbackForm.reset();
+            imagePreviewContainer.innerHTML = '';
+            imagePreviewContainer.classList.add('hidden');
+        });
+
+        // 加载更多反馈
+        document.getElementById('load-more-feedback').addEventListener('click', function() {
+            this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>加载中...';
+            
+            // 模拟加载延迟
+            setTimeout(() => {
+                alert('已加载全部反馈内容');
+                this.innerHTML = '<i class="fa fa-check mr-2"></i>已加载全部';
+                this.disabled = true;
+                this.classList.add('opacity-50', 'cursor-not-allowed');
+            }, 1000);
+        });
+
+        // 搜索反馈
+        document.getElementById('search-feedback').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const feedbackItems = document.querySelectorAll('.feedback-list > div');
+            
+            feedbackItems.forEach(item => {
+                const content = item.textContent.toLowerCase();
+                if (content.includes(searchTerm)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

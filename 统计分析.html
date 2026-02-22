@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计分析 - 集章地点地图导航与印章资源探索软件</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366F1', // 主色调 - 紫色
+                        secondary: '#EC4899', // 辅助色 - 粉色
+                        accent: '#10B981', // 强调色 - 绿色
+                        neutral: '#1F2937', // 中性色 - 深灰
+                        light: '#F9FAFB', // 浅色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .nav-gradient {
+                background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
+            }
+            .bg-pattern {
+                background-color: #f8fafc;
+                position: relative;
+                overflow: hidden;
+            }
+            .bg-pattern::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image: radial-gradient(#6366F1 1px, transparent 1px),
+                                 radial-gradient(#EC4899 1px, transparent 1px);
+                background-size: 50px 50px;
+                background-position: 0 0, 25px 25px;
+                animation: moveBackground 60s linear infinite;
+                z-index: 0;
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            /* 模态框动画效果 */
+            @keyframes moveBackground {
+                0% {
+                    background-position: 0 0, 25px 25px;
+                }
+                100% {
+                    background-position: 100px 100px, 125px 125px;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="font-sans text-neutral">
+    <!-- 导航栏 -->
+    <header class="nav-gradient nav-decoration sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between py-4">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="bg-white rounded-full p-2 mr-3 shadow-lg">
+                        <i class="fa fa-map-marker text-primary text-2xl"></i>
+                    </div>
+                    <h1 class="text-white text-2xl md:text-3xl font-bold text-shadow">
+                        集章地点地图导航
+                    </h1>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-button" class="md:hidden text-white text-xl focus:outline-none">
+                    <i class="fa fa-bars"></i>
+                </button>
+                
+                <!-- 桌面端导航 -->
+                    <nav class="hidden md:flex space-x-2">
+                        <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html'">
+                            <i class="fa fa-home mr-2"></i>首页
+                        </button>
+                        <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html#map-page'">
+                            <i class="fa fa-map mr-2"></i>集章地图
+                        </button>
+                        <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html#stamps-page'">
+                            <i class="fa fa-certificate mr-2"></i>印章资源库
+                        </button>
+                        <button class="nav-item nav-item-active px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='统计分析.html'">
+                            <i class="fa fa-bar-chart mr-2"></i>统计分析
+                        </button>
+                    <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章点反馈.html'">
+                        <i class="fa fa-comment mr-2"></i>集章点反馈
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='新点提交.html'">
+                        <i class="fa fa-plus-circle mr-2"></i>新点提交
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='个人账户.html'">
+                        <i class="fa fa-user mr-2"></i>个人账户
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- 移动端导航菜单 -->
+                            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                                <div class="flex flex-col space-y-2">
+                                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html'">
+                                        <i class="fa fa-home mr-3"></i>首页
+                                    </button>
+                                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html#map-page'">
+                                        <i class="fa fa-map mr-3"></i>集章地图
+                                    </button>
+                                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章地点地图导航与印章资源探索软件.html#stamps-page'">
+                                        <i class="fa fa-certificate mr-3"></i>印章资源库
+                                    </button>
+                                    <button class="nav-item nav-item-active px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='统计分析.html'">
+                                        <i class="fa fa-bar-chart mr-3"></i>统计分析
+                                    </button>
+                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='集章点反馈.html'">
+                        <i class="fa fa-comment mr-3"></i>集章点反馈
+                    </button>
+                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='新点提交.html'">
+                        <i class="fa fa-plus-circle mr-3"></i>新点提交
+                    </button>
+                    <button class="nav-item px-4 py-3 rounded-lg text-white font-medium transition-all hover:bg-white/30 flex items-center" onclick="window.location.href='个人账户.html'">
+                        <i class="fa fa-user mr-3"></i>个人账户
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 统计分析页面 -->
+        <section id="statistics-page" class="page-container active">
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center">
+                <i class="fa fa-bar-chart text-primary mr-2"></i>统计分析
+            </h2>
+
+            <!-- 个人集章统计卡片 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">已收集印章</p>
+                            <h3 class="text-3xl font-bold text-primary mt-1">127</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-certificate text-primary text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-accent text-sm">
+                        <i class="fa fa-arrow-up mr-1"></i>
+                        <span>本月新增 12 枚</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">访问集章点</p>
+                            <h3 class="text-3xl font-bold text-secondary mt-1">43</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-map-marker text-secondary text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-accent text-sm">
+                        <i class="fa fa-arrow-up mr-1"></i>
+                        <span>本月新增 5 个</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">完成路线</p>
+                            <h3 class="text-3xl font-bold text-accent mt-1">7</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-road text-accent text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-gray-500 text-sm">
+                        <span>持续增长中</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">集章等级</p>
+                            <h3 class="text-3xl font-bold text-neutral mt-1">Lv.5</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-neutral/10 rounded-full flex items-center justify-center">
+                            <i class="fa fa-trophy text-neutral text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-gray-500 text-sm">
+                        <span>距离升级还需 13 枚印章</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 集章进度图表 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- 月度集章趋势图 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4">月度集章趋势</h3>
+                    <div class="h-80">
+                        <canvas id="monthly-stamp-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 集章类型分布图 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4">集章类型分布</h3>
+                    <div class="h-80">
+                        <canvas id="stamp-type-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最近收集印章 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">最近收集印章</h3>
+                    <a href="#" class="text-primary font-medium hover:underline">查看全部</a>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                            <img src="https://youke1.picui.cn/s1/2025/11/17/691af9d9b8bad.png" alt="印章图片" class="w-full h-full object-contain">
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="font-medium">文化探索之旅 - 中央图书馆</h4>
+                            <p class="text-sm text-gray-500">收集于 2025-11-15 14:30</p>
+                        </div>
+                        <div class="flex items-center text-gray-500">
+                            <i class="fa fa-map-marker mr-1"></i>
+                            <span class="text-sm">北京</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                            <img src="https://picsum.photos/id/304/100/100" alt="印章图片" class="w-full h-full object-contain">
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="font-medium">文艺咖啡之旅 - 星空咖啡工坊</h4>
+                            <p class="text-sm text-gray-500">收集于 2025-11-14 16:45</p>
+                        </div>
+                        <div class="flex items-center text-gray-500">
+                            <i class="fa fa-map-marker mr-1"></i>
+                            <span class="text-sm">上海</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                            <img src="https://youke1.picui.cn/s1/2025/11/17/691af9dd99d9a.png" alt="印章图片" class="w-full h-full object-contain">
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="font-medium">国际文化节限定印章</h4>
+                            <p class="text-sm text-gray-500">收集于 2025-11-10 10:20</p>
+                        </div>
+                        <div class="flex items-center text-gray-500">
+                            <i class="fa fa-map-marker mr-1"></i>
+                            <span class="text-sm">广州</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 成就与徽章 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">成就与徽章</h3>
+                    <a href="#" class="text-primary font-medium hover:underline">全部成就</a>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div class="flex flex-col items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center mb-2">
+                            <i class="fa fa-certificate text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-medium text-center">印章收集者</h4>
+                        <p class="text-xs text-gray-500 text-center">初级</p>
+                    </div>
+                    <div class="flex flex-col items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="w-16 h-16 bg-secondary text-white rounded-full flex items-center justify-center mb-2">
+                            <i class="fa fa-map text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-medium text-center">地图探索者</h4>
+                        <p class="text-xs text-gray-500 text-center">中级</p>
+                    </div>
+                    <div class="flex flex-col items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="w-16 h-16 bg-accent text-white rounded-full flex items-center justify-center mb-2">
+                            <i class="fa fa-road text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-medium text-center">路线达人</h4>
+                        <p class="text-xs text-gray-500 text-center">初级</p>
+                    </div>
+                    <div class="flex flex-col items-center p-3 bg-gray-100 rounded-lg opacity-70">
+                        <div class="w-16 h-16 bg-gray-400 text-white rounded-full flex items-center justify-center mb-2">
+                            <i class="fa fa-star text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-medium text-center">集章大师</h4>
+                        <p class="text-xs text-gray-500 text-center">未解锁</p>
+                    </div>
+                    <div class="flex flex-col items-center p-3 bg-gray-100 rounded-lg opacity-70">
+                        <div class="w-16 h-16 bg-gray-400 text-white rounded-full flex items-center justify-center mb-2">
+                            <i class="fa fa-globe text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-medium text-center">环球旅行家</h4>
+                        <p class="text-xs text-gray-500 text-center">未解锁</p>
+                    </div>
+                    <div class="flex flex-col items-center p-3 bg-gray-100 rounded-lg opacity-70">
+                        <div class="w-16 h-16 bg-gray-400 text-white rounded-full flex items-center justify-center mb-2">
+                            <i class="fa fa-trophy text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-medium text-center">全能冠军</h4>
+                        <p class="text-xs text-gray-500 text-center">未解锁</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 初始化图表
+        document.addEventListener('DOMContentLoaded', function() {
+            // 月度集章趋势图
+            const monthlyCtx = document.getElementById('monthly-stamp-chart').getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月'],
+                    datasets: [{
+                        label: '收集印章数',
+                        data: [8, 12, 15, 18, 22, 16, 20, 14, 25, 28, 12],
+                        borderColor: '#6366F1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 集章类型分布图
+            const typeCtx = document.getElementById('stamp-type-chart').getContext('2d');
+            new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['文化场馆', '咖啡餐饮', '旅游景点', '文创商店', '历史建筑', '其他'],
+                    datasets: [{
+                        data: [35, 20, 15, 12, 10, 8],
+                        backgroundColor: [
+                            '#6366F1',
+                            '#EC4899',
+                            '#10B981',
+                            '#F59E0B',
+                            '#8B5CF6',
+                            '#6B7280'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        });
+    </script>
+</body>
+</html>
