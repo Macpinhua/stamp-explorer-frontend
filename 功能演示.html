@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集章地点地图导航 - 功能演示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="api_client.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- 导航栏 -->
+        <header class="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-6 mb-8 shadow-lg">
+            <h1 class="text-3xl font-bold text-center">🗺️ 集章地点地图导航</h1>
+            <p class="text-center mt-2">后端功能集成演示</p>
+        </header>
+
+        <!-- 用户注册/登录区域 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">👤 用户功能</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 注册表单 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-purple-600">會員註冊</h3>
+                    <form id="register-form" class="space-y-3">
+                        <input type="email" id="reg-email" placeholder="邮箱" class="w-full p-3 border rounded-lg" required>
+                        <input type="text" id="reg-username" placeholder="用户名" class="w-full p-3 border rounded-lg" required>
+                        <input type="text" id="reg-fullname" placeholder="真实姓名" class="w-full p-3 border rounded-lg">
+                        <input type="password" id="reg-password" placeholder="密码" class="w-full p-3 border rounded-lg" required>
+                        <button type="submit" class="w-full bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-lg font-medium transition-colors">
+                            注册账户
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 登录表单 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-blue-600">用户登录</h3>
+                    <form id="login-form" class="space-y-3">
+                        <input type="text" id="login-username" placeholder="用户名或邮箱" class="w-full p-3 border rounded-lg" required>
+                        <input type="password" id="login-password" placeholder="密码" class="w-full p-3 border rounded-lg" required>
+                        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-lg font-medium transition-colors">
+                            登录账户
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 用户状态显示 -->
+            <div id="user-status" class="mt-4 p-4 bg-gray-50 rounded-lg hidden">
+                <p class="text-green-600 font-medium">✅ 已登录用户: <span id="current-username"></span></p>
+                <button id="logout-btn" class="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">
+                    退出登录
+                </button>
+            </div>
+        </div>
+
+        <!-- 发帖功能区域 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">📝 社区发帖</h2>
+            
+            <form id="post-form" class="space-y-4">
+                <input type="text" id="post-title" placeholder="帖子标题" class="w-full p-3 border rounded-lg" required>
+                <textarea id="post-content" placeholder="分享你的集章经历..." class="w-full p-3 border rounded-lg h-32" required></textarea>
+                
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg font-medium transition-colors">
+                        <i class="fa fa-paper-plane mr-2"></i>发布帖子
+                    </button>
+                    <button type="button" id="refresh-posts" class="bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg font-medium transition-colors">
+                        <i class="fa fa-refresh mr-2"></i>刷新帖子
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 帖子展示区域 -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">📰 社区帖子</h2>
+            <div id="posts-container" class="space-y-4">
+                <p class="text-gray-500 text-center py-8">点击"刷新帖子"加载社区内容</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    <div id="message-toast" class="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg hidden">
+        <span id="message-text"></span>
+    </div>
+
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查用户登录状态
+            checkUserStatus();
+            
+            // 绑定表单事件
+            bindFormEvents();
+        });
+
+        // 检查用户状态
+        function checkUserStatus() {
+            if (apiClient.isAuthenticated()) {
+                apiClient.getCurrentUser()
+                    .then(user => {
+                        document.getElementById('current-username').textContent = user.username;
+                        document.getElementById('user-status').classList.remove('hidden');
+                    })
+                    .catch(() => {
+                        apiClient.logout();
+                    });
+            }
+        }
+
+        // 绑定表单事件
+        function bindFormEvents() {
+            // 用户注册
+            document.getElementById('register-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const userData = {
+                    email: document.getElementById('reg-email').value,
+                    username: document.getElementById('reg-username').value,
+                    full_name: document.getElementById('reg-fullname').value,
+                    password: document.getElementById('reg-password').value
+                };
+
+                try {
+                    const result = await apiClient.register(userData);
+                    showMessage('注册成功！请登录', 'success');
+                    this.reset();
+                } catch (error) {
+                    showMessage('注册失败: ' + error.message, 'error');
+                }
+            });
+
+            // 用户登录
+            document.getElementById('login-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const credentials = {
+                    username: document.getElementById('login-username').value,
+                    password: document.getElementById('login-password').value
+                };
+
+                try {
+                    const result = await apiClient.login(credentials);
+                    showMessage('登录成功！', 'success');
+                    checkUserStatus();
+                    this.reset();
+                } catch (error) {
+                    showMessage('登录失败: ' + error.message, 'error');
+                }
+            });
+
+            // 退出登录
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                apiClient.logout();
+                document.getElementById('user-status').classList.add('hidden');
+                showMessage('已退出登录', 'info');
+            });
+
+            // 发布帖子
+            document.getElementById('post-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!apiClient.isAuthenticated()) {
+                    showMessage('请先登录后再发帖', 'error');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('title', document.getElementById('post-title').value);
+                formData.append('content', document.getElementById('post-content').value);
+
+                try {
+                    const result = await apiClient.createPost(formData);
+                    showMessage('帖子发布成功！', 'success');
+                    this.reset();
+                    loadPosts(); // 刷新帖子列表
+                } catch (error) {
+                    showMessage('发帖失败: ' + error.message, 'error');
+                }
+            });
+
+            // 刷新帖子
+            document.getElementById('refresh-posts').addEventListener('click', loadPosts);
+        }
+
+        // 加载帖子列表
+        async function loadPosts() {
+            try {
+                const posts = await apiClient.getPosts();
+                displayPosts(posts);
+            } catch (error) {
+                showMessage('加载帖子失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示帖子列表
+        function displayPosts(posts) {
+            const container = document.getElementById('posts-container');
+            
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">暂无帖子</p>';
+                return;
+            }
+
+            container.innerHTML = posts.map(post => `
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-lg text-gray-800">${post.title || '无标题'}</h3>
+                        <span class="text-sm text-gray-500">${new Date(post.created_at).toLocaleString()}</span>
+                    </div>
+                    <p class="text-gray-600 mb-3">${post.content || '无内容'}</p>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <span>作者: ${post.author?.username || '匿名'}</span>
+                        <button class="text-blue-500 hover:text-blue-700" onclick="likePost('${post.id}')">
+                            <i class="fa fa-thumbs-up mr-1"></i>点赞 (${post.like_count || 0})
+                        </button>
+                        <span>评论 (${post.comment_count || 0})</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 点赞功能
+        async function likePost(postId) {
+            if (!apiClient.isAuthenticated()) {
+                showMessage('请先登录后再点赞', 'error');
+                return;
+            }
+
+            try {
+                await apiClient.likePost(postId);
+                showMessage('点赞成功！', 'success');
+                loadPosts(); // 刷新帖子列表
+            } catch (error) {
+                showMessage('点赞失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示消息提示
+        function showMessage(message, type = 'info') {
+            const toast = document.getElementById('message-toast');
+            const textElement = document.getElementById('message-text');
+            
+            textElement.textContent = message;
+            toast.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                'bg-blue-500'
+            } text-white`;
+            
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
