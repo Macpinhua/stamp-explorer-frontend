@@ -1,5 +1,5 @@
 class ApiClient {
-    constructor(baseURL = 'http://localhost:8000') {
+    constructor(baseURL = '') {
         this.baseURL = baseURL;
         this.token = localStorage.getItem('token');
     }
@@ -90,9 +90,7 @@ class ApiClient {
         return this.request('/api/users/avatar/upload', {
             method: 'POST',
             body: formData,
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
+            headers: {}
         });
     }
 
@@ -101,9 +99,7 @@ class ApiClient {
         return this.request('/api/posts/', {
             method: 'POST',
             body: formData,
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
+            headers: {}
         });
     }
 
@@ -124,9 +120,7 @@ class ApiClient {
         return this.request('/api/stamps/', {
             method: 'POST',
             body: formData,
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
+            headers: {}
         });
     }
 
@@ -147,9 +141,7 @@ class ApiClient {
         return this.request('/api/feedback/', {
             method: 'POST',
             body: formData,
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
+            headers: {}
         });
     }
 

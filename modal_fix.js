@@ -1,4 +1,3 @@
-<script>
 // 简化的模态框修复脚本
 (function() {
     'use strict';
@@ -113,4 +112,3 @@
         waitForElements();
     }
 })();
-</script>

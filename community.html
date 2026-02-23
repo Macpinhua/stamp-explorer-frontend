@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集章社区 - 集章探索平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366F1',
+                        secondary: '#EC4899',
+                        accent: '#10B981',
+                        neutral: '#1F2937',
+                        light: '#F9FAFB',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-gradient {
+            background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        .animate-fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <header class="nav-gradient sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center">
+                    <div class="bg-white rounded-full p-2 mr-3 shadow-lg">
+                        <i class="fa fa-map-marker text-primary text-2xl"></i>
+                    </div>
+                    <h1 class="text-white text-2xl font-bold">集章探索平台</h1>
+                </div>
+                <nav class="hidden md:flex space-x-4">
+                    <a href="首页.html" class="text-white hover:text-gray-200 font-medium">
+                        <i class="fa fa-home mr-1"></i>首页
+                    </a>
+                    <a href="个人账户.html" class="text-white hover:text-gray-200 font-medium">
+                        <i class="fa fa-user mr-1"></i>个人账户
+                    </a>
+                    <button id="logout-btn" class="text-white hover:text-gray-200 font-medium">
+                        <i class="fa fa-sign-out mr-1"></i>退出
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 消息提示区域 -->
+        <div id="flash-messages"></div>
+
+        <!-- 社区选项卡 -->
+        <div class="bg-white rounded-xl shadow-lg mb-8">
+            <div class="flex border-b">
+                <button class="tab-btn px-6 py-4 font-medium text-primary border-b-2 border-primary" data-tab="share">
+                    <i class="fa fa-share-alt mr-2"></i>分享展示
+                </button>
+                <button class="tab-btn px-6 py-4 font-medium text-gray-500 border-b-2 border-transparent" data-tab="exchange">
+                    <i class="fa fa-exchange mr-2"></i>印章交换
+                </button>
+                <button class="tab-btn px-6 py-4 font-medium text-gray-500 border-b-2 border-transparent" data-tab="my-exchanges">
+                    <i class="fa fa-list mr-2"></i>我的交换
+                </button>
+            </div>
+        </div>
+
+        <!-- 分享展示内容 -->
+        <div id="share-content" class="tab-content">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4">
+                        <i class="fa fa-user text-primary text-xl"></i>
+                    </div>
+                    <button id="post-btn" class="flex-1 bg-gray-100 rounded-full py-3 px-6 text-left text-gray-500 hover:bg-gray-200 transition-colors">
+                        分享你的集章故事...
+                    </button>
+                </div>
+            </div>
+
+            <div id="posts-container" class="space-y-6">
+                <!-- 帖子将通过JavaScript动态加载 -->
+                <div class="text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p class="mt-2 text-gray-500">加载中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 印章交换内容 -->
+        <div id="exchange-content" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4">
+                        <i class="fa fa-user text-primary text-xl"></i>
+                    </div>
+                    <button id="exchange-request-btn" class="flex-1 bg-gray-100 rounded-full py-3 px-6 text-left text-gray-500 hover:bg-gray-200 transition-colors">
+                        发布印章交换请求...
+                    </button>
+                </div>
+            </div>
+
+            <div id="exchanges-container" class="space-y-6">
+                <!-- 交换请求将通过JavaScript动态加载 -->
+                <div class="text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p class="mt-2 text-gray-500">加载中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的交换内容 -->
+        <div id="my-exchanges-content" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">我的交换请求</h2>
+                <div id="my-exchanges-list" class="space-y-4">
+                    <!-- 我的交换将通过JavaScript动态加载 -->
+                    <div class="text-center py-8">
+                        <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                        <p class="mt-2 text-gray-500">加载中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 发布帖子模态框 -->
+    <div id="post-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">分享集章故事</h2>
+                    <button id="close-post-modal" class="text-gray-500 hover:text-gray-800">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <input type="text" id="post-title" class="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all" 
+                       placeholder="请输入帖子标题...">
+                <textarea id="post-content" class="w-full border border-gray-300 rounded-lg p-4 h-32 focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none" 
+                          placeholder="分享你的集章经历、心得或故事..."></textarea>
+                
+                <!-- 图片上传区域 -->
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">添加图片</label>
+                    <div class="flex items-center">
+                        <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 transition-colors flex items-center">
+                            <i class="fa fa-image mr-2"></i>
+                            选择图片
+                            <input type="file" id="post-images" multiple accept="image/*" class="hidden" />
+                        </label>
+                        <span class="ml-4 text-sm text-gray-500" id="image-count">0 张图片</span>
+                    </div>
+                    <div id="image-preview" class="mt-3 grid grid-cols-3 gap-2 hidden">
+                        <!-- 图片预览将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <button id="publish-post" class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                    发布
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发布交换请求模态框 -->
+    <div id="exchange-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">发布交换请求</h2>
+                    <button id="close-exchange-modal" class="text-gray-500 hover:text-gray-800">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">我拥有的印章</label>
+                        <select id="offered-stamp" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            <option value="">请选择要交换的印章</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">想要的印章</label>
+                        <input type="text" id="wanted-stamp" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" 
+                               placeholder="请输入想要的印章名称">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">交换说明（可选）</label>
+                        <textarea id="exchange-description" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" 
+                                  placeholder="描述交换的具体要求或条件..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <button id="publish-exchange" class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                    发布交换请求
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentTab = 'share';
+        let myStamps = [];
+
+        // DOM元素
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const postModal = document.getElementById('post-modal');
+        const exchangeModal = document.getElementById('exchange-modal');
+
+        // 选项卡切换
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                switchTab(tab);
+            });
+        });
+
+        function switchTab(tabName) {
+            // 更新按钮状态
+            tabBtns.forEach(btn => {
+                if (btn.dataset.tab === tabName) {
+                    btn.classList.add('text-primary', 'border-primary');
+                    btn.classList.remove('text-gray-500', 'border-transparent');
+                } else {
+                    btn.classList.remove('text-primary', 'border-primary');
+                    btn.classList.add('text-gray-500', 'border-transparent');
+                }
+            });
+
+            // 显示对应内容
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`${tabName}-content`).classList.remove('hidden');
+
+            currentTab = tabName;
+
+            // 加载对应数据
+            if (tabName === 'share') {
+                loadPosts();
+            } else if (tabName === 'exchange') {
+                loadExchanges();
+            } else if (tabName === 'my-exchanges') {
+                loadMyExchanges();
+            }
+        }
+
+        // 加载社区帖子
+        async function loadPosts() {
+            try {
+                const response = await fetch('/api/posts');
+                const posts = await response.json();
+                displayPosts(posts);
+            } catch (error) {
+                console.error('加载帖子失败:', error);
+                document.getElementById('posts-container').innerHTML = 
+                    '<div class="text-center py-12 text-red-500">加载失败，请刷新重试</div>';
+            }
+        }
+
+        async function displayPosts(posts) {
+            const container = document.getElementById('posts-container');
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+                        <i class="fa fa-share-alt text-4xl text-gray-300 mb-4"></i>
+                        <h3 class="text-xl font-bold text-gray-700 mb-2">暂无分享</h3>
+                        <p class="text-gray-500">成为第一个分享集章故事的人吧！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 为每个帖子检查点赞状态
+            const postsWithLikeStatus = await Promise.all(posts.map(async (post) => {
+                if (window.current_user && window.current_user.is_authenticated) {
+                    try {
+                        const response = await fetch(`/api/posts/${post.id}/is_liked`);
+                        if (response.ok) {
+                            const likeData = await response.json();
+                            return {...post, is_liked: likeData.is_liked};
+                        }
+                    } catch (error) {
+                        console.error('检查点赞状态失败:', error);
+                    }
+                }
+                return {...post, is_liked: false};
+            }));
+
+            container.innerHTML = postsWithLikeStatus.map(post => `
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover fade-in">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                                <i class="fa fa-user text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">${post.author}</h3>
+                                <p class="text-sm text-gray-500">${new Date(post.created_at).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <h4 class="font-bold text-lg mb-2">${post.title}</h4>
+                            <p class="text-gray-700">${post.content}</p>
+                        </div>
+                        ${post.image_urls ? `
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+                                ${JSON.parse(post.image_urls).slice(0, 3).map(url => 
+                                    `<img src="${url}" alt="帖子图片" class="w-full aspect-square object-cover rounded-lg">`
+                                ).join('')}
+                            </div>
+                        ` : ''}
+                        <div class="flex items-center text-gray-500 mb-4">
+                            <button class="like-btn flex items-center mr-6 hover:text-red-500 transition-colors" 
+                                    data-post-id="${post.id}" 
+                                    data-likes="${post.likes}">
+                                <i class="fa ${post.is_liked ? 'fa-heart text-red-500' : 'fa-heart-o'} mr-1 transition-all duration-200"></i> 
+                                <span class="like-count">${post.likes}</span>
+                            </button>
+                            <button class="comment-toggle flex items-center mr-6 hover:text-primary transition-colors" 
+                                    data-post-id="${post.id}">
+                                <i class="fa fa-comment mr-1"></i> <span class="comment-count">${post.comments_count}</span>
+                            </button>
+                            <button class="flex items-center hover:text-primary mr-6">
+                                <i class="fa fa-share mr-1"></i> 分享
+                            </button>
+                            ${post.author_id === window.currentUserId ? `
+                                <button class="delete-post-btn flex items-center hover:text-red-500 transition-colors" data-post-id="${post.id}">
+                                    <i class="fa fa-trash mr-1"></i> 删除
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- 评论区域 -->
+                        <div class="comment-section hidden" id="comments-${post.id}">
+                            <!-- 评论输入 -->
+                            <div class="border-t pt-4 mt-4">
+                                <div class="flex items-start space-x-3 mb-4">
+                                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <i class="fa fa-user text-primary text-sm"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <textarea class="comment-input w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none" 
+                                                  placeholder="写下你的评论..." 
+                                                  data-post-id="${post.id}"></textarea>
+                                        <div class="flex justify-end mt-2">
+                                            <button class="comment-submit bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary/90 transition-colors" 
+                                                    data-post-id="${post.id}">
+                                                发表评论
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 评论列表 -->
+                                <div class="comments-list space-y-4" id="comments-list-${post.id}">
+                                    <!-- 评论将通过JavaScript动态加载 -->
+                                    <div class="text-center py-4 text-gray-500">
+                                        <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-2"></div>
+                                        加载评论中...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // 绑定点赞事件
+            bindLikeEvents();
+        }
+
+        // 加载交换请求
+        async function loadExchanges() {
+            try {
+                const response = await fetch('/api/exchanges');
+                const exchanges = await response.json();
+                displayExchanges(exchanges);
+            } catch (error) {
+                console.error('加载交换请求失败:', error);
+                document.getElementById('exchanges-container').innerHTML = 
+                    '<div class="text-center py-12 text-red-500">加载失败，请刷新重试</div>';
+            }
+        }
+
+        function displayExchanges(exchanges) {
+            const container = document.getElementById('exchanges-container');
+            if (exchanges.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+                        <i class="fa fa-exchange text-4xl text-gray-300 mb-4"></i>
+                        <h3 class="text-xl font-bold text-gray-700 mb-2">暂无交换请求</h3>
+                        <p class="text-gray-500">发布你的第一个交换请求吧！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = exchanges.map(exchange => `
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover fade-in">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                                    <i class="fa fa-user text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">${exchange.username}</h3>
+                                    <p class="text-sm text-gray-500">${new Date(exchange.created_at).toLocaleString()}</p>
+                                </div>
+                            </div>
+                            ${exchange.can_match ? `
+                                <button onclick="matchExchange(${exchange.id})" 
+                                        class="bg-primary text-white px-4 py-2 rounded-full hover:bg-primary/90 transition-colors">
+                                    <i class="fa fa-exchange mr-1"></i> 交换
+                                </button>
+                            ` : `
+                                <span class="bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm">
+                                    我的交换
+                                </span>
+                            `}
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex items-center justify-center space-x-4 mb-3">
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                        <i class="fa fa-certificate text-2xl text-primary"></i>
+                                    </div>
+                                    <p class="text-sm font-medium">${exchange.offered_stamp_name}</p>
+                                    <p class="text-xs text-gray-500">提供</p>
+                                </div>
+                                <div class="text-2xl text-gray-400">⇄</div>
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                        <i class="fa fa-certificate text-2xl text-secondary"></i>
+                                    </div>
+                                    <p class="text-sm font-medium">${exchange.wanted_stamp_name}</p>
+                                    <p class="text-xs text-gray-500">寻求</p>
+                                </div>
+                            </div>
+                            ${exchange.description ? `
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <p class="text-gray-700 text-sm">${exchange.description}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 加载我的交换请求
+        async function loadMyExchanges() {
+            try {
+                const response = await fetch('/api/exchanges/my');
+                const exchanges = await response.json();
+                displayMyExchanges(exchanges);
+            } catch (error) {
+                console.error('加载我的交换失败:', error);
+                document.getElementById('my-exchanges-list').innerHTML = 
+                    '<div class="text-center py-8 text-red-500">加载失败，请刷新重试</div>';
+            }
+        }
+
+        function displayMyExchanges(exchanges) {
+            const container = document.getElementById('my-exchanges-list');
+            if (exchanges.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fa fa-list text-3xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">暂无交换请求</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = exchanges.map(exchange => `
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="text-sm font-medium">${exchange.offered_stamp_name}</span>
+                                <span class="text-gray-400">⇄</span>
+                                <span class="text-sm font-medium">${exchange.wanted_stamp_name}</span>
+                            </div>
+                            <p class="text-xs text-gray-500">${new Date(exchange.created_at).toLocaleString()}</p>
+                            <span class="inline-block mt-2 px-2 py-1 text-xs rounded-full ${
+                                exchange.status === 'active' ? 'bg-green-100 text-green-800' :
+                                exchange.status === 'matched' ? 'bg-blue-100 text-blue-800' :
+                                exchange.status === 'completed' ? 'bg-purple-100 text-purple-800' :
+                                'bg-gray-100 text-gray-800'
+                            }">
+                                ${exchange.status === 'active' ? '进行中' :
+                                  exchange.status === 'matched' ? '已匹配' :
+                                  exchange.status === 'completed' ? '已完成' : '已取消'}
+                            </span>
+                        </div>
+                        ${exchange.status === 'active' ? `
+                            <button onclick="cancelExchange(${exchange.id})" 
+                                    class="text-red-500 hover:text-red-700 text-sm">
+                                取消
+                            </button>
+                        ` : ''}
+                    </div>
+                    ${exchange.description ? `
+                        <p class="text-sm text-gray-600 mt-2">${exchange.description}</p>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // 匹配交换
+        async function matchExchange(exchangeId) {
+            if (!confirm('确定要匹配这个交换请求吗？')) return;
+            
+            try {
+                const response = await fetch(`/api/exchanges/${exchangeId}/match`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    loadExchanges(); // 重新加载交换列表
+                } else {
+                    alert('匹配失败：' + result.message);
+                }
+            } catch (error) {
+                console.error('匹配失败:', error);
+                alert('网络错误，请稍后重试');
+            }
+        }
+
+        // 取消交换
+        async function cancelExchange(exchangeId) {
+            if (!confirm('确定要取消这个交换请求吗？')) return;
+            
+            try {
+                const response = await fetch(`/api/exchanges/${exchangeId}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    loadMyExchanges(); // 重新加载我的交换列表
+                } else {
+                    alert('取消失败：' + result.message);
+                }
+            } catch (error) {
+                console.error('取消失败:', error);
+                alert('网络错误，请稍后重试');
+            }
+        }
+
+        // 模态框控制
+        document.getElementById('post-btn')?.addEventListener('click', () => {
+            postModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        });
+
+        document.getElementById('exchange-request-btn')?.addEventListener('click', async () => {
+            // 加载用户的印章列表
+            try {
+                const response = await fetch('/api/user/stamps');
+                const stamps = await response.json();
+                myStamps = stamps;
+                
+                const select = document.getElementById('offered-stamp');
+                select.innerHTML = '<option value="">请选择要交换的印章</option>' + 
+                    stamps.map(stamp => `<option value="${stamp.name}">${stamp.name}</option>`).join('');
+            } catch (error) {
+                console.error('加载印章列表失败:', error);
+            }
+            
+            exchangeModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        });
+
+        document.getElementById('close-post-modal')?.addEventListener('click', () => {
+            postModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        });
+
+        document.getElementById('close-exchange-modal')?.addEventListener('click', () => {
+            exchangeModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        });
+
+        // 图片上传预览
+        document.getElementById('post-images')?.addEventListener('change', function(e) {
+            const files = e.target.files;
+            const previewContainer = document.getElementById('image-preview');
+            const imageCount = document.getElementById('image-count');
+            
+            if (files.length > 0) {
+                previewContainer.classList.remove('hidden');
+                previewContainer.innerHTML = '';
+                imageCount.textContent = `${files.length} 张图片`;
+                
+                Array.from(files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const previewDiv = document.createElement('div');
+                            previewDiv.className = 'relative';
+                            previewDiv.innerHTML = `
+                                <img src="${event.target.result}" alt="预览图片" class="w-full h-24 object-cover rounded-lg border border-gray-200">
+                                <button class="remove-image absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600" data-index="${index}">
+                                    ×
+                                </button>
+                            `;
+                            previewContainer.appendChild(previewDiv);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            } else {
+                previewContainer.classList.add('hidden');
+                imageCount.textContent = '0 张图片';
+            }
+        });
+
+        // 移除图片
+        document.getElementById('image-preview').addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-image')) {
+                e.preventDefault();
+                const index = e.target.dataset.index;
+                const fileInput = document.getElementById('post-images');
+                const files = Array.from(fileInput.files);
+                
+                // 移除对应的文件
+                files.splice(index, 1);
+                
+                // 更新文件输入
+                const dt = new DataTransfer();
+                files.forEach(file => dt.items.add(file));
+                fileInput.files = dt.files;
+                
+                // 重新触发change事件
+                const event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            }
+        });
+
+        // 发布帖子
+        document.getElementById('publish-post')?.addEventListener('click', async () => {
+            const title = document.getElementById('post-title').value.trim();
+            const content = document.getElementById('post-content').value.trim();
+            
+            if (!title) {
+                alert('请输入帖子标题');
+                return;
+            }
+            
+            if (!content) {
+                alert('请输入帖子内容');
+                return;
+            }
+
+            try {
+                // 上传图片
+                const imageUrls = [];
+                const fileInput = document.getElementById('post-images');
+                const files = fileInput.files;
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (file.type.startsWith('image/')) {
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        const uploadResponse = await fetch('/api/upload/image', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const uploadResult = await uploadResponse.json();
+                        if (uploadResult.success) {
+                            imageUrls.push(uploadResult.image_url);
+                        }
+                    }
+                }
+
+                // 创建帖子数据
+                const postData = {
+                    title: title,
+                    content: content,
+                    image_urls: JSON.stringify(imageUrls)
+                };
+
+                // 调用创建帖子的API
+                const response = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('帖子发布成功！', 'success');
+                    postModal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                    document.getElementById('post-title').value = '';
+                    document.getElementById('post-content').value = '';
+                    document.getElementById('post-images').value = '';
+                    document.getElementById('image-preview').classList.add('hidden');
+                    document.getElementById('image-count').textContent = '0 张图片';
+                    
+                    // 重新加载帖子列表
+                    loadPosts();
+                } else {
+                    showMessage('发布失败：' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('发布失败:', error);
+                showMessage('发布失败，请稍后重试', 'error');
+            }
+        });
+
+        // 发布交换请求
+        document.getElementById('publish-exchange')?.addEventListener('click', async () => {
+            const offeredStamp = document.getElementById('offered-stamp').value;
+            const wantedStamp = document.getElementById('wanted-stamp').value.trim();
+            const description = document.getElementById('exchange-description').value.trim();
+
+            if (!offeredStamp || !wantedStamp) {
+                alert('请填写完整的交换信息');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/exchanges', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        offered_stamp_name: offeredStamp,
+                        wanted_stamp_name: wantedStamp,
+                        description: description
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    exchangeModal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                    // 清空表单
+                    document.getElementById('offered-stamp').value = '';
+                    document.getElementById('wanted-stamp').value = '';
+                    document.getElementById('exchange-description').value = '';
+                    loadExchanges(); // 重新加载交换列表
+                } else {
+                    alert('发布失败：' + result.message);
+                }
+            } catch (error) {
+                console.error('发布失败:', error);
+                alert('网络错误，请稍后重试');
+            }
+        });
+
+        // 绑定点赞、评论和删除事件
+        function bindLikeEvents() {
+            document.querySelectorAll('.like-btn').forEach(button => {
+                button.addEventListener('click', handleLikeClick);
+            });
+        }
+
+        function bindCommentEvents() {
+            // 绑定评论展开/收起事件
+            document.querySelectorAll('.comment-toggle').forEach(button => {
+                button.addEventListener('click', function() {
+                    const postId = this.dataset.postId;
+                    const commentSection = document.getElementById(`comments-${postId}`);
+                    const isVisible = !commentSection.classList.contains('hidden');
+                    
+                    if (isVisible) {
+                        commentSection.classList.add('hidden');
+                    } else {
+                        commentSection.classList.remove('hidden');
+                        loadComments(postId);
+                    }
+                });
+            });
+            
+            // 绑定评论提交事件
+            document.querySelectorAll('.comment-submit').forEach(button => {
+                button.addEventListener('click', handleCommentSubmit);
+            });
+            
+            // 绑定回车提交评论
+            document.querySelectorAll('.comment-input').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const postId = this.dataset.postId;
+                        const submitButton = document.querySelector(`.comment-submit[data-post-id="${postId}"]`);
+                        if (submitButton) {
+                            submitButton.click();
+                        }
+                    }
+                });
+            });
+        }
+
+        // 绑定删除帖子事件
+        function bindDeletePostEvents() {
+            document.querySelectorAll('.delete-post-btn').forEach(button => {
+                button.addEventListener('click', async function() {
+                    const postId = this.dataset.postId;
+                    
+                    if (!confirm('确定要删除这篇帖子吗？删除后无法恢复！')) {
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch(`/api/posts/${postId}`, {
+                            method: 'DELETE'
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            showMessage('帖子删除成功！', 'success');
+                            // 重新加载帖子列表
+                            loadPosts();
+                        } else {
+                            showMessage(result.message || '删除失败', 'error');
+                        }
+                    } catch (error) {
+                        console.error('删除帖子失败:', error);
+                        showMessage('网络错误，请稍后重试', 'error');
+                    }
+                });
+            });
+        }
+            // 绑定评论展开/收起事件
+            document.querySelectorAll('.comment-toggle').forEach(button => {
+                button.addEventListener('click', function() {
+                    const postId = this.dataset.postId;
+                    const commentSection = document.getElementById(`comments-${postId}`);
+                    const isVisible = !commentSection.classList.contains('hidden');
+                    
+                    if (isVisible) {
+                        commentSection.classList.add('hidden');
+                    } else {
+                        commentSection.classList.remove('hidden');
+                        loadComments(postId);
+                    }
+                });
+            });
+            
+            // 绑定评论提交事件
+            document.querySelectorAll('.comment-submit').forEach(button => {
+                button.addEventListener('click', handleCommentSubmit);
+            });
+            
+            // 绑定回车提交评论
+            document.querySelectorAll('.comment-input').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const postId = this.dataset.postId;
+                        const submitButton = document.querySelector(`.comment-submit[data-post-id="${postId}"]`);
+                        if (submitButton) {
+                            submitButton.click();
+                        }
+                    }
+                });
+            });
+        }
+
+        // 处理点赞点击
+        async function handleLikeClick(event) {
+            event.preventDefault();
+            
+            // 检查用户是否登录
+            if (!window.current_user || !window.current_user.is_authenticated) {
+                alert('请先登录后再点赞');
+                window.location.href = '/login';
+                return;
+            }
+
+            const button = event.currentTarget;
+            const postId = button.dataset.postId;
+            const icon = button.querySelector('i');
+            const countElement = button.querySelector('.like-count');
+            
+            // 添加加载状态
+            button.disabled = true;
+            button.style.opacity = '0.7';
+            
+            try {
+                const response = await fetch(`/api/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 更新UI
+                    if (result.action === 'liked') {
+                        icon.classList.remove('fa-heart-o');
+                        icon.classList.add('fa-heart', 'text-red-500');
+                        // 添加点赞动画
+                        icon.style.transform = 'scale(1.3)';
+                        setTimeout(() => {
+                            icon.style.transform = 'scale(1)';
+                        }, 200);
+                    } else {
+                        icon.classList.remove('fa-heart', 'text-red-500');
+                        icon.classList.add('fa-heart-o');
+                    }
+                    
+                    countElement.textContent = result.likes_count;
+                    
+                    // 显示成功消息
+                    showMessage(result.message, 'success');
+                } else {
+                    showMessage('操作失败：' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('点赞操作失败:', error);
+                showMessage('网络错误，请稍后重试', 'error');
+            } finally {
+                // 移除加载状态
+                button.disabled = false;
+                button.style.opacity = '1';
+            }
+        }
+
+        // 显示消息提示
+        function showMessage(message, type = 'info') {
+            const messageEl = document.createElement('div');
+            messageEl.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium animate-fade-in`;
+            
+            switch(type) {
+                case 'success':
+                    messageEl.classList.add('bg-green-500');
+                    break;
+                case 'error':
+                    messageEl.classList.add('bg-red-500');
+                    break;
+                case 'warning':
+                    messageEl.classList.add('bg-yellow-500');
+                    break;
+                default:
+                    messageEl.classList.add('bg-blue-500');
+            }
+            
+            messageEl.textContent = message;
+            document.body.appendChild(messageEl);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                messageEl.classList.add('animate-fade-out');
+                setTimeout(() => {
+                    if (document.body.contains(messageEl)) {
+                        document.body.removeChild(messageEl);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // 处理评论提交
+        async function handleCommentSubmit(event) {
+            const postId = this.dataset.postId;
+            const inputElement = document.querySelector(`.comment-input[data-post-id="${postId}"]`);
+            const content = inputElement.value.trim();
+            
+            if (!content) {
+                showMessage('请输入评论内容', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content: content })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    inputElement.value = '';
+                    showMessage('评论发表成功', 'success');
+                    loadComments(postId); // 重新加载评论
+                    
+                    // 更新评论数量显示
+                    const commentCountElement = document.querySelector(`.comment-toggle[data-post-id="${postId}"] .comment-count`);
+                    if (commentCountElement) {
+                        const currentCount = parseInt(commentCountElement.textContent) || 0;
+                        commentCountElement.textContent = currentCount + 1;
+                    }
+                } else {
+                    showMessage(result.message || '评论发表失败', 'error');
+                }
+            } catch (error) {
+                console.error('评论提交失败:', error);
+                showMessage('网络错误，请稍后重试', 'error');
+            }
+        }
+
+        // 加载评论
+        async function loadComments(postId) {
+            try {
+                const response = await fetch(`/api/posts/${postId}/comments`);
+                const comments = await response.json();
+                
+                const commentsList = document.getElementById(`comments-list-${postId}`);
+                if (!commentsList) return;
+                
+                if (comments.length === 0) {
+                    commentsList.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fa fa-comment-o text-3xl mb-2"></i>
+                            <p>暂无评论，快来抢沙发吧！</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                commentsList.innerHTML = comments.map(comment => `
+                    <div class="comment-item border-b border-gray-100 pb-4 last:border-b-0" data-comment-id="${comment.id}">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-user text-primary text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center mb-1">
+                                    <span class="font-medium text-sm text-gray-900">${comment.username}</span>
+                                    <span class="mx-2 text-gray-400">•</span>
+                                    <span class="text-xs text-gray-500">${formatTime(comment.created_at)}</span>
+                                </div>
+                                <p class="text-gray-700 text-sm mb-2">${escapeHtml(comment.content)}</p>
+                                <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                    <button class="reply-btn hover:text-primary transition-colors" data-comment-id="${comment.id}" data-post-id="${postId}">
+                                        回复
+                                    </button>
+                                    ${comment.user_id === window.currentUserId ? `
+                                        <button class="delete-comment-btn hover:text-red-500 transition-colors" data-comment-id="${comment.id}">
+                                            删除
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 回复列表 -->
+                        ${comment.replies && comment.replies.length > 0 ? `
+                            <div class="ml-11 mt-3 space-y-3">
+                                ${comment.replies.map(reply => `
+                                    <div class="flex items-start space-x-2 text-sm">
+                                        <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                            <i class="fa fa-reply text-gray-500 text-xs"></i>
+                                        </div>
+                                        <div class="flex-1 bg-gray-50 rounded-lg p-2">
+                                            <div class="flex items-center mb-1">
+                                                <span class="font-medium text-xs text-gray-800">${reply.username}</span>
+                                                <span class="mx-1 text-gray-400">•</span>
+                                                <span class="text-xs text-gray-500">${formatTime(reply.created_at)}</span>
+                                            </div>
+                                            <p class="text-gray-700">${escapeHtml(reply.content)}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                ${comment.replies_count > 3 ? `
+                                    <div class="text-center">
+                                        <button class="text-primary text-sm hover:underline">查看全部 ${comment.replies_count} 条回复</button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+                
+                // 绑定回复和删除事件
+                bindReplyEvents(postId);
+                bindDeleteCommentEvents();
+                
+            } catch (error) {
+                console.error('加载评论失败:', error);
+                const commentsList = document.getElementById(`comments-list-${postId}`);
+                if (commentsList) {
+                    commentsList.innerHTML = `
+                        <div class="text-center py-4 text-red-500">
+                            <i class="fa fa-exclamation-circle mr-2"></i>
+                            评论加载失败
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // 绑定回复事件
+        function bindReplyEvents(postId) {
+            document.querySelectorAll('.reply-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const commentId = this.dataset.commentId;
+                    const postId = this.dataset.postId;
+                    const inputElement = document.querySelector(`.comment-input[data-post-id="${postId}"]`);
+                    
+                    // 设置回复提示
+                    inputElement.placeholder = `回复 @${this.closest('.comment-item').querySelector('.font-medium').textContent}:`;
+                    inputElement.dataset.replyTo = commentId;
+                    inputElement.focus();
+                });
+            });
+        }
+
+        // 绑定删除评论事件
+        function bindDeleteCommentEvents() {
+            document.querySelectorAll('.delete-comment-btn').forEach(button => {
+                button.addEventListener('click', async function() {
+                    const commentId = this.dataset.commentId;
+                    
+                    if (!confirm('确定要删除这条评论吗？')) {
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch(`/api/comments/${commentId}`, {
+                            method: 'DELETE'
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            showMessage('评论删除成功', 'success');
+                            // 重新加载所在帖子的评论
+                            const commentItem = this.closest('.comment-item');
+                            const postId = commentItem.closest('[id^="comments-"]').id.replace('comments-', '');
+                            loadComments(postId);
+                        } else {
+                            showMessage(result.message || '删除失败', 'error');
+                        }
+                    } catch (error) {
+                        console.error('删除评论失败:', error);
+                        showMessage('网络错误，请稍后重试', 'error');
+                    }
+                });
+            });
+        }
+
+        // 格式化时间
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMinutes = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMinutes / 60);
+            const diffDays = Math.floor(diffHours / 24);
+            
+            if (diffMinutes < 1) return '刚刚';
+            if (diffMinutes < 60) return `${diffMinutes}分钟前`;
+            if (diffHours < 24) return `${diffHours}小时前`;
+            if (diffDays < 7) return `${diffDays}天前`;
+            
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 检查用户是否登录
+        function checkLogin() {
+            if (!window.current_user || !window.current_user.is_authenticated) {
+                alert('请先登录后再进行操作');
+                window.location.href = '/login';
+                return false;
+            }
+            return true;
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查用户认证状态
+            checkAuthStatus();
+            
+            // 绑定事件监听器
+            bindEventListeners();
+            
+            // 默认加载分享内容
+            loadPosts();
+        });
+        
+        // 检查用户认证状态
+        async function checkAuthStatus() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.current_user = { is_authenticated: false };
+                    return;
+                }
+                
+                const response = await fetch('/api/users/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    window.current_user = {
+                        is_authenticated: true,
+                        id: userData.id,
+                        username: userData.username
+                    };
+                    window.currentUserId = userData.id;
+                } else {
+                    // token无效，清除本地存储
+                    localStorage.removeItem('token');
+                    window.current_user = { is_authenticated: false };
+                }
+            } catch (error) {
+                console.error('检查认证状态失败:', error);
+                window.current_user = { is_authenticated: false };
+            }
+        }
+        
+        // 绑定事件监听器
+        function bindEventListeners() {
+            // 绑定选项卡切换
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.dataset.tab;
+                    switchTab(tab);
+                });
+            });
+            
+            // 绑定发帖按钮
+            document.getElementById('post-btn')?.addEventListener('click', openPostModal);
+            
+            // 绑定模态框关闭
+            document.getElementById('close-post-modal')?.addEventListener('click', closePostModal);
+            
+            // 绑定发布按钮
+            document.getElementById('publish-post')?.addEventListener('click', publishPost);
+            
+            // 绑定登出按钮
+            document.getElementById('logout-btn')?.addEventListener('click', logout);
+            
+            // 绑定图片上传预览
+            document.getElementById('post-images')?.addEventListener('change', handleImagePreview);
+        }
+            
+        // 点赞功能
+        function bindLikeEvents() {
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    if (!window.current_user?.is_authenticated) {
+                        alert('请先登录再进行点赞操作');
+                        window.location.href = '/login';
+                        return;
+                    }
+                        
+                    const postId = this.dataset.postId;
+                    const isLiked = this.dataset.liked === 'true';
+                    const likeCountSpan = this.querySelector('.like-count');
+                    const heartIcon = this.querySelector('i');
+                        
+                    try {
+                        const response = await fetch(`/api/posts/${postId}/like`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            }
+                        });
+                            
+                        const result = await response.json();
+                            
+                        if (response.ok) {
+                            // 更新UI
+                            const newLiked = !isLiked;
+                            this.dataset.liked = newLiked.toString();
+                                
+                            if (newLiked) {
+                                heartIcon.classList.remove('fa-heart-o');
+                                heartIcon.classList.add('fa-heart', 'text-red-500');
+                            } else {
+                                heartIcon.classList.remove('fa-heart', 'text-red-500');
+                                heartIcon.classList.add('fa-heart-o');
+                            }
+                                
+                            likeCountSpan.textContent = result.likes_count;
+                        } else {
+                            alert(result.detail || '操作失败');
+                        }
+                    } catch (error) {
+                        console.error('点赞操作失败:', error);
+                        alert('网络错误，请稍后重试');
+                    }
+                });
+            });
+        }
+            
+        // 评论功能
+        function bindCommentSubmitEvents() {
+            document.querySelectorAll('.submit-comment-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    if (!window.current_user?.is_authenticated) {
+                        alert('请先登录再发表评论');
+                        window.location.href = '/login';
+                        return;
+                    }
+                        
+                    const postId = this.dataset.postId;
+                    const textarea = document.querySelector(`.comment-input[data-post-id="${postId}"]`);
+                    const content = textarea.value.trim();
+                        
+                    if (!content) {
+                        alert('请输入评论内容');
+                        return;
+                    }
+                        
+                    try {
+                        const response = await fetch('/api/comments/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({
+                                post_id: parseInt(postId),
+                                content: content
+                            })
+                        });
+                            
+                        const result = await response.json();
+                            
+                        if (response.ok) {
+                            textarea.value = '';
+                            loadComments(postId); // 重新加载评论
+                            // 更新评论计数
+                            const commentBtn = document.querySelector(`.comment-btn[data-post-id="${postId}"] span`);
+                            if (commentBtn) {
+                                const currentCount = parseInt(commentBtn.textContent) || 0;
+                                commentBtn.textContent = currentCount + 1;
+                            }
+                        } else {
+                            alert(result.detail || '发表评论失败');
+                        }
+                    } catch (error) {
+                        console.error('发表评论失败:', error);
+                        alert('网络错误，请稍后重试');
+                    }
+                });
+            });
+        }
+            
+        // 加载评论
+        async function loadComments(postId) {
+            try {
+                const response = await fetch(`/api/comments/post/${postId}`);
+                const comments = await response.json();
+                displayComments(postId, comments);
+            } catch (error) {
+                console.error('加载评论失败:', error);
+            }
+        }
+            
+        function displayComments(postId, comments) {
+            const container = document.getElementById(`comments-list-${postId}`);
+            if (!container) return;
+                
+            if (comments.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">暂无评论</p>';
+                return;
+            }
+                
+            container.innerHTML = comments.map(comment => `
+                <div class="comment-item flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <i class="fa fa-user text-primary text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center mb-1">
+                            <span class="font-medium text-gray-800 text-sm">${escapeHtml(comment.author_username)}</span>
+                            <span class="text-gray-500 text-xs ml-2">${formatTime(comment.created_at)}</span>
+                        </div>
+                        <p class="text-gray-700 text-sm">${escapeHtml(comment.content)}</p>
+                        ${window.current_user?.id === comment.author_id ? `
+                            <button class="delete-comment-btn text-red-500 hover:text-red-700 text-xs mt-1" 
+                                    data-comment-id="${comment.id}">
+                                删除
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+                
+            // 绑定删除评论事件
+            bindDeleteCommentEvents();
+        }
+            
+        // 绑定删除评论事件
+        function bindDeleteCommentEvents() {
+            document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    if (!confirm('确定要删除这条评论吗？')) return;
+                        
+                    const commentId = this.dataset.commentId;
+                        
+                    try {
+                        const response = await fetch(`/api/comments/${commentId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            }
+                        });
+                            
+                        if (response.ok) {
+                            // 重新加载所在帖子的评论
+                            const commentItem = this.closest('.comment-item');
+                            const postId = commentItem.closest('[id^="comments-"]').id.replace('comments-', '');
+                            loadComments(postId);
+                                
+                            // 更新评论计数
+                            const commentBtn = document.querySelector(`.comment-btn[data-post-id="${postId}"] span`);
+                            if (commentBtn) {
+                                const currentCount = parseInt(commentBtn.textContent) || 1;
+                                commentBtn.textContent = Math.max(0, currentCount - 1);
+                            }
+                        } else {
+                            const result = await response.json();
+                            alert(result.detail || '删除失败');
+                        }
+                    } catch (error) {
+                        console.error('删除评论失败:', error);
+                        alert('网络错误，请稍后重试');
+                    }
+                });
+            });
+        }
+            
+        // 发帖相关功能
+        function openPostModal() {
+            if (!window.current_user?.is_authenticated) {
+                alert('请先登录再发布帖子');
+                window.location.href = '/login';
+                return;
+            }
+                
+            document.getElementById('post-modal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+            
+        function closePostModal() {
+            document.getElementById('post-modal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            // 清空表单
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-content').value = '';
+            document.getElementById('post-images').value = '';
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('image-count').textContent = '0 张图片';
+        }
+            
+        async function publishPost() {
+            const title = document.getElementById('post-title').value.trim();
+            const content = document.getElementById('post-content').value.trim();
+                
+            if (!title) {
+                alert('请输入帖子标题');
+                return;
+            }
+                
+            if (!content) {
+                alert('请输入帖子内容');
+                return;
+            }
+                
+            const publishBtn = document.getElementById('publish-post');
+            const originalText = publishBtn.textContent;
+            publishBtn.disabled = true;
+            publishBtn.textContent = '发布中...';
+                
+            try {
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('content', content);
+                    
+                // 添加图片文件
+                const imageFiles = document.getElementById('post-images').files;
+                for (let i = 0; i < imageFiles.length; i++) {
+                    formData.append('files', imageFiles[i]);
+                }
+                    
+                const response = await fetch('/api/posts/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: formData
+                });
+                    
+                const result = await response.json();
+                    
+                if (response.ok) {
+                    alert('帖子发布成功！');
+                    closePostModal();
+                    loadPosts(); // 重新加载帖子列表
+                } else {
+                    alert(result.detail || '发布失败');
+                }
+            } catch (error) {
+                console.error('发布帖子失败:', error);
+                alert('网络错误，请稍后重试');
+            } finally {
+                publishBtn.disabled = false;
+                publishBtn.textContent = originalText;
+            }
+        }
+            
+        // 图片预览功能
+        function handleImagePreview(e) {
+            const files = e.target.files;
+            const previewContainer = document.getElementById('image-preview');
+            const imageCount = document.getElementById('image-count');
+                
+            if (files.length > 0) {
+                previewContainer.classList.remove('hidden');
+                previewContainer.innerHTML = '';
+                imageCount.textContent = `${files.length} 张图片`;
+                    
+                Array.from(files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const previewDiv = document.createElement('div');
+                            previewDiv.className = 'relative';
+                            previewDiv.innerHTML = `
+                                <img src="${event.target.result}" alt="预览图片" class="w-full h-24 object-cover rounded-lg border border-gray-200">
+                                <button class="remove-image absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600" data-index="${index}">
+                                    ×
+                                </button>
+                            `;
+                            previewContainer.appendChild(previewDiv);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            } else {
+                previewContainer.classList.add('hidden');
+                imageCount.textContent = '0 张图片';
+            }
+        }
+            
+        // 登出功能
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('token_expiry');
+                window.location.href = '/';
+            }
+        }
+            
+        // 格式化时间
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMinutes = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMinutes / 60);
+            const diffDays = Math.floor(diffHours / 24);
+                
+            if (diffMinutes < 1) return '刚刚';
+            if (diffMinutes < 60) return `${diffMinutes}分钟前`;
+            if (diffHours < 24) return `${diffHours}小时前`;
+            if (diffDays < 7) return `${diffDays}天前`;
+                
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+            
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
