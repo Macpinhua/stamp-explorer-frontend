@@ -310,6 +310,71 @@
         </div>
     </main>
 
+    <!-- 发帖模态框 -->
+    <div id="post-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">分享集章故事</h2>
+                    <button id="close-post-modal" class="text-gray-500 hover:text-gray-800">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <textarea id="post-content" class="w-full border border-gray-300 rounded-lg p-4 h-32 focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none" 
+                          placeholder="分享你的集章经历、心得或故事..."></textarea>
+                
+                <!-- 图片上传区域 -->
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">添加图片</label>
+                    <div class="flex items-center">
+                        <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 transition-colors flex items-center">
+                            <i class="fa fa-image mr-2"></i>
+                            选择图片
+                            <input type="file" id="post-images" multiple accept="image/*" class="hidden" />
+                        </label>
+                        <span class="ml-4 text-sm text-gray-500" id="image-count">0 张图片</span>
+                    </div>
+                    <div id="image-preview" class="mt-3 grid grid-cols-3 gap-2 hidden">
+                        <!-- 图片预览将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <button id="publish-post" class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                    发布
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 评论模态框 -->
+    <div id="comment-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">发表评论</h2>
+                    <button id="close-comment-modal" class="text-gray-500 hover:text-gray-800">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div id="comment-post-preview" class="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <!-- 帖子预览将在这里显示 -->
+                </div>
+                <textarea id="comment-content" class="w-full border border-gray-300 rounded-lg p-4 h-24 focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none" 
+                          placeholder="写下你的评论..."></textarea>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <button id="publish-comment" class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                    发表评论
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 页脚 -->
     <footer class="bg-dark text-white py-8">
         <div class="container mx-auto px-4">
@@ -469,6 +534,239 @@
                 });
             }
         });
+    </script>
+    <script src="api_client.js"></script>
+    <script>
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCommunity();
+        });
+
+        function initializeCommunity() {
+            // 绑定选项卡切换
+            bindTabEvents();
+            
+            // 绑定发帖按钮
+            bindPostEvents();
+            
+            // 绑定互动按钮
+            bindInteractionEvents();
+            
+            // 绑定模态框事件
+            bindModalEvents();
+        }
+
+        // 选项卡切换功能
+        function bindTabEvents() {
+            const shareTab = document.getElementById('share-tab');
+            const exchangeTab = document.getElementById('exchange-tab');
+            const shareContent = document.getElementById('share-content');
+            const exchangeContent = document.getElementById('exchange-content');
+
+            shareTab?.addEventListener('click', function() {
+                this.classList.add('text-primary', 'border-primary');
+                this.classList.remove('text-gray-500', 'border-transparent');
+                exchangeTab?.classList.remove('text-primary', 'border-primary');
+                exchangeTab?.classList.add('text-gray-500', 'border-transparent');
+                
+                shareContent?.classList.remove('hidden');
+                exchangeContent?.classList.add('hidden');
+            });
+
+            exchangeTab?.addEventListener('click', function() {
+                this.classList.add('text-primary', 'border-primary');
+                this.classList.remove('text-gray-500', 'border-transparent');
+                shareTab?.classList.remove('text-primary', 'border-primary');
+                shareTab?.classList.add('text-gray-500', 'border-transparent');
+                
+                exchangeContent?.classList.remove('hidden');
+                shareContent?.classList.add('hidden');
+            });
+        }
+
+        // 发帖功能
+        function bindPostEvents() {
+            const postButton = document.getElementById('post-button');
+            const postModal = document.getElementById('post-modal');
+            const closePostModal = document.getElementById('close-post-modal');
+            const publishPost = document.getElementById('publish-post');
+
+            postButton?.addEventListener('click', function() {
+                postModal?.classList.remove('hidden');
+            });
+
+            closePostModal?.addEventListener('click', function() {
+                postModal?.classList.add('hidden');
+                resetPostForm();
+            });
+
+            publishPost?.addEventListener('click', function() {
+                const content = document.getElementById('post-content').value.trim();
+                if (content) {
+                    createPost(content);
+                    postModal?.classList.add('hidden');
+                    resetPostForm();
+                } else {
+                    alert('请输入帖子内容');
+                }
+            });
+
+            // 点击背景关闭模态框
+            postModal?.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                    resetPostForm();
+                }
+            });
+        }
+
+        // 互动功能（点赞、评论）
+        function bindInteractionEvents() {
+            // 点赞功能
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.fa-heart')) {
+                    const heartBtn = e.target.closest('button');
+                    toggleLike(heartBtn);
+                }
+                
+                // 评论功能
+                if (e.target.closest('.fa-comment')) {
+                    const commentBtn = e.target.closest('button');
+                    openCommentModal(commentBtn);
+                }
+            });
+        }
+
+        // 模态框事件绑定
+        function bindModalEvents() {
+            const commentModal = document.getElementById('comment-modal');
+            const closeCommentModal = document.getElementById('close-comment-modal');
+            const publishComment = document.getElementById('publish-comment');
+
+            closeCommentModal?.addEventListener('click', function() {
+                commentModal?.classList.add('hidden');
+                document.getElementById('comment-content').value = '';
+            });
+
+            publishComment?.addEventListener('click', function() {
+                const content = document.getElementById('comment-content').value.trim();
+                if (content) {
+                    addComment(content);
+                    commentModal?.classList.add('hidden');
+                    document.getElementById('comment-content').value = '';
+                } else {
+                    alert('请输入评论内容');
+                }
+            });
+
+            // 点击背景关闭评论模态框
+            commentModal?.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                    document.getElementById('comment-content').value = '';
+                }
+            });
+        }
+
+        // 创建新帖子
+        function createPost(content) {
+            const newPost = document.createElement('div');
+            newPost.className = 'bg-white rounded-xl shadow-lg overflow-hidden card-hover';
+            newPost.innerHTML = `
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                            <img src="https://picsum.photos/id/67/200/200" alt="用户头像" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">我</h3>
+                            <p class="text-sm text-gray-500">刚刚</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mb-4">${content}</p>
+                    <div class="flex items-center text-gray-500">
+                        <button class="flex items-center mr-6 text-red-500"><i class="fa fa-heart mr-1"></i> 1</button>
+                        <button class="flex items-center mr-6"><i class="fa fa-comment mr-1"></i> 0</button>
+                        <button class="flex items-center"><i class="fa fa-share-alt mr-1"></i> 分享</button>
+                    </div>
+                </div>
+            `;
+            
+            const shareContent = document.getElementById('share-content');
+            const firstChild = shareContent?.firstElementChild;
+            if (firstChild) {
+                shareContent?.insertBefore(newPost, firstChild.nextSibling);
+            }
+        }
+
+        // 点赞切换
+        function toggleLike(button) {
+            const icon = button.querySelector('.fa-heart');
+            const countSpan = button.querySelector('span') || button;
+            let count = parseInt(countSpan.textContent.match(/\d+/)?.[0] || '0');
+            
+            if (icon.classList.contains('text-red-500')) {
+                // 取消点赞
+                icon.classList.remove('text-red-500');
+                count--;
+            } else {
+                // 点赞
+                icon.classList.add('text-red-500');
+                count++;
+            }
+            
+            if (countSpan.tagName === 'SPAN') {
+                countSpan.textContent = countSpan.textContent.replace(/\d+/, count.toString());
+            } else {
+                button.innerHTML = `<i class="fa fa-heart mr-1 ${icon.classList.contains('text-red-500') ? 'text-red-500' : ''}"></i> ${count}`;
+            }
+        }
+
+        // 打开评论模态框
+        function openCommentModal(button) {
+            const commentModal = document.getElementById('comment-modal');
+            const postElement = button.closest('.bg-white');
+            
+            // 显示帖子预览
+            const preview = document.getElementById('comment-post-preview');
+            if (preview && postElement) {
+                const postContent = postElement.querySelector('p.text-gray-700')?.textContent || '';
+                preview.innerHTML = `
+                    <div class="text-sm text-gray-600">
+                        <strong>原帖：</strong> ${postContent.substring(0, 100)}${postContent.length > 100 ? '...' : ''}
+                    </div>
+                `;
+            }
+            
+            commentModal?.classList.remove('hidden');
+        }
+
+        // 添加评论
+        function addComment(content) {
+            const commentBtn = document.querySelector('#comment-modal').previousElementSibling?.querySelector('.fa-comment').closest('button');
+            if (commentBtn) {
+                const countSpan = commentBtn.querySelector('span') || commentBtn;
+                let count = parseInt(countSpan.textContent.match(/\d+/)?.[0] || '0');
+                count++;
+                
+                if (countSpan.tagName === 'SPAN') {
+                    countSpan.textContent = countSpan.textContent.replace(/\d+/, count.toString());
+                } else {
+                    commentBtn.innerHTML = `<i class="fa fa-comment mr-1"></i> ${count}`;
+                }
+            }
+            
+            // 这里可以添加实际的评论显示逻辑
+            console.log('添加评论:', content);
+        }
+
+        // 重置发帖表单
+        function resetPostForm() {
+            document.getElementById('post-content').value = '';
+            document.getElementById('image-count').textContent = '0 张图片';
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('image-preview').innerHTML = '';
+        }
     </script>
 </body>
 </html>
