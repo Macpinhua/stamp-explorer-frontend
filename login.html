@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录 - 集章探索平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366F1',
+                        secondary: '#EC4899',
+                        accent: '#10B981',
+                        neutral: '#1F2937',
+                        light: '#F9FAFB',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-gradient {
+            background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
+        }
+        .login-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="login-bg">
+    <!-- 导航栏 -->
+    <header class="nav-gradient sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center">
+                    <div class="bg-white rounded-full p-2 mr-3 shadow-lg">
+                        <i class="fa fa-map-marker text-primary text-2xl"></i>
+                    </div>
+                    <h1 class="text-white text-2xl font-bold">集章地点地图导航</h1>
+                </div>
+                <nav class="hidden md:flex space-x-4">
+                    <a href="/" class="text-white hover:text-gray-200 font-medium">
+                        <i class="fa fa-home mr-1"></i>返回首页
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 登录表单 -->
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div class="text-center">
+                    <div class="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-user text-primary text-2xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">欢迎回来</h2>
+                    <p class="text-gray-600">登录您的账户继续集章之旅</p>
+                </div>
+
+                <!-- 消息提示区域 -->
+                <div id="flash-messages"></div>
+
+                <form class="mt-8 space-y-6" method="POST">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+                                用户名
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa fa-user text-gray-400"></i>
+                                </div>
+                                <input id="username" name="username" type="text" required
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                       placeholder="请输入用户名">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                                密码
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa fa-lock text-gray-400"></i>
+                                </div>
+                                <input id="password" name="password" type="password" required
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                       placeholder="请输入密码">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input id="remember-me" name="remember-me" type="checkbox"
+                                   class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                            <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                                记住我
+                            </label>
+                        </div>
+                        <div class="text-sm">
+                            <a href="#" class="font-medium text-primary hover:text-primary/80">
+                                忘记密码？
+                            </a>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition-all shadow-lg">
+                        登录
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">
+                        还没有账户？
+                        <a href="/register" class="font-medium text-primary hover:text-primary/80">
+                            立即注册
+                        </a>
+                    </p>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="text-center text-sm text-gray-500">
+                        <p>© 2024 集章探索平台. 保留所有权利.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 表单提交处理
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // 获取表单数据
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            // 基本验证
+            if (!username || !password) {
+                showMessage('请输入用户名和密码', 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>登录中...';
+            
+            try {
+                // 调用API登录
+                const response = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // 保存token到localStorage
+                    localStorage.setItem('token', data.access_token);
+                    showMessage('登录成功！正在跳转...', 'success');
+                    
+                    // 根据记住我选项决定token保存时间
+                    const rememberMe = document.getElementById('remember-me').checked;
+                    if (rememberMe) {
+                        // 设置7天过期
+                        const expiryDate = new Date();
+                        expiryDate.setDate(expiryDate.getDate() + 7);
+                        localStorage.setItem('token_expiry', expiryDate.toISOString());
+                    }
+                    
+                    // 跳转到社区页面
+                    setTimeout(() => {
+                        window.location.href = '/community';
+                    }, 1500);
+                } else {
+                    showMessage(data.detail || '登录失败，请检查用户名和密码', 'error');
+                }
+            } catch (error) {
+                console.error('登录错误:', error);
+                showMessage('网络错误，请检查连接后重试', 'error');
+            } finally {
+                // 恢复按钮状态
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+        
+        // 页面加载时检查是否已有有效的token
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const expiry = localStorage.getItem('token_expiry');
+            
+            if (token && expiry) {
+                const expiryDate = new Date(expiry);
+                if (expiryDate > new Date()) {
+                    // token仍然有效，直接跳转到社区
+                    window.location.href = '/community';
+                } else {
+                    // token已过期，清除存储
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('token_expiry');
+                }
+            }
+        });
+        
+        // 显示消息函数
+        function showMessage(message, type) {
+            // 移除现有的消息
+            const existingMessage = document.querySelector('.message-alert');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            // 创建新的消息元素
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message-alert mt-4 p-3 rounded-lg ${
+                type === 'success' 
+                    ? 'bg-green-100 border border-green-400 text-green-700' 
+                    : 'bg-red-100 border border-red-400 text-red-700'
+            }`;
+            messageDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fa ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            // 插入到表单前面
+            const form = document.querySelector('form');
+            form.parentNode.insertBefore(messageDiv, form);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 3000);
+        }
+        
+        // 忘记密码链接点击事件
+        document.querySelector('[href="#"]').addEventListener('click', function(e) {
+            e.preventDefault();
+            showMessage('忘记密码功能即将上线，敬请期待！', 'info');
+        });
+    </script>

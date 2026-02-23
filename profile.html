@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人资料 - 集章探索平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366F1',
+                        secondary: '#EC4899',
+                        accent: '#10B981',
+                        neutral: '#1F2937',
+                        light: '#F9FAFB',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-gradient {
+            background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
+        }
+        .profile-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="profile-bg">
+    <!-- 导航栏 -->
+    <header class="nav-gradient sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center">
+                    <div class="bg-white rounded-full p-2 mr-3 shadow-lg">
+                        <i class="fa fa-map-marker text-primary text-2xl"></i>
+                    </div>
+                    <h1 class="text-white text-2xl font-bold">集章地点地图导航</h1>
+                </div>
+                <nav class="hidden md:flex space-x-4">
+                    <a href="/" class="text-white hover:text-gray-200 font-medium">
+                        <i class="fa fa-home mr-1"></i>返回首页
+                    </a>
+                    <a href="/community" class="text-white hover:text-gray-200 font-medium">
+                        <i class="fa fa-users mr-1"></i>社区
+                    </a>
+                    <button id="logout-btn" class="text-white hover:text-gray-200 font-medium">
+                        <i class="fa fa-sign-out mr-1"></i>退出
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 个人资料内容 -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- 消息提示区域 -->
+            <div id="flash-messages"></div>
+
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <!-- 头部 -->
+                <div class="bg-gradient-to-r from-primary to-secondary px-6 py-8 text-white">
+                    <div class="flex flex-col md:flex-row items-center">
+                        <div class="relative mb-4 md:mb-0 md:mr-6">
+                            <div class="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border-4 border-white/30">
+                                <div id="avatar-display">
+                                    <i class="fa fa-user text-4xl text-white/80"></i>
+                                </div>
+                            </div>
+                            <button onclick="document.getElementById('avatar-upload').click()" 
+                                    class="absolute bottom-0 right-0 bg-white text-primary rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors">
+                                <i class="fa fa-camera text-sm"></i>
+                            </button>
+                            <input type="file" id="avatar-upload" class="hidden" accept="image/*">
+                        </div>
+                        <div class="text-center md:text-left">
+                            <h1 class="text-3xl font-bold mb-2" id="user-username">加载中...</h1>
+                            <p class="text-white/90 mb-1">
+                                <i class="fa fa-envelope mr-2"></i><span id="user-email">加载中...</span>
+                            </p>
+                            <p class="text-white/90" id="user-location-container" style="display: none;">
+                                <i class="fa fa-map-marker mr-2"></i><span id="user-location"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 编辑表单 -->
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">编辑个人资料</h2>
+                    
+                    <form method="POST" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                                    用户名
+                                </label>
+                                <input type="text" id="username" name="username" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                       required>
+                            </div>
+
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                                    邮箱地址
+                                </label>
+                                <input type="email" id="email" name="email" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                       required>
+                            </div>
+
+                            <div>
+                                <label for="location" class="block text-sm font-medium text-gray-700 mb-2">
+                                    所在城市
+                                </label>
+                                <input type="text" id="location" name="location" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                       placeholder="例如：上海市">
+                            </div>
+
+                            <div>
+                                <label for="bio" class="block text-sm font-medium text-gray-700 mb-2">
+                                    个人简介
+                                </label>
+                                <textarea id="bio" name="bio" rows="3"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                          placeholder="介绍一下你自己..."></textarea>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                修改密码（可选）
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <input type="password" id="current-password" name="current_password"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                           placeholder="当前密码">
+                                </div>
+                                <div>
+                                    <input type="password" id="new-password" name="new_password"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                           placeholder="新密码">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                            <a href="/" 
+                               class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                                取消
+                            </a>
+                            <button type="submit"
+                                    class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:opacity-90 transition-all shadow-lg">
+                                保存更改
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 统计信息 -->
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa fa-certificate text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800" data-stats="stamps">0</h3>
+                    <p class="text-gray-600">收集印章</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                    <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa fa-map-marker text-secondary text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800" data-stats="locations">0</h3>
+                    <p class="text-gray-600">访问地点</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+                    <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa fa-star text-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800" data-stats="level">Lv.1</h3>
+                    <p class="text-gray-600">集章等级</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 头像预览功能
+        document.getElementById('avatar-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // 这里可以添加上传逻辑
+                    alert('头像上传功能将在后续版本中实现');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 表单验证
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const newPassword = document.getElementById('new-password').value;
+            const currentPassword = document.getElementById('current-password').value;
+            
+            if (newPassword && !currentPassword) {
+                e.preventDefault();
+                alert('修改密码需要输入当前密码');
+                return;
+            }
+        });
+    </script>
+    <script>
+        // 页面加载时获取用户信息
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUserProfile();
+            bindEventListeners();
+        });
+        
+        // 加载用户资料
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const response = await fetch('/api/users/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('获取用户信息失败');
+                }
+                
+                const userData = await response.json();
+                displayUserInfo(userData);
+                
+            } catch (error) {
+                console.error('加载用户信息失败:', error);
+                showMessage('加载用户信息失败，请重新登录', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            }
+        }
+        
+        // 显示用户信息
+        function displayUserInfo(userData) {
+            // 更新头像
+            const avatarContainer = document.querySelector('.w-24.h-24');
+            if (userData.avatar_url) {
+                avatarContainer.innerHTML = `<img src="${userData.avatar_url}" alt="头像" class="w-full h-full object-cover">`;
+            }
+            
+            // 更新基本信息
+            document.querySelector('h1').textContent = userData.username;
+            document.querySelector('[data-field="email"]').textContent = userData.email;
+            
+            // 填充表单
+            document.getElementById('username').value = userData.username || '';
+            document.getElementById('email').value = userData.email || '';
+            document.getElementById('bio').value = userData.bio || '';
+            
+            // 显示统计信息
+            displayStats(userData);
+        }
+        
+        // 显示统计数据
+        function displayStats(userData) {
+            // 这里可以根据实际API返回的数据来显示统计信息
+            // 目前使用默认值
+            document.querySelector('[data-stats="stamps"]').textContent = userData.stamps_count || 0;
+            document.querySelector('[data-stats="locations"]').textContent = userData.locations_count || 0;
+            document.querySelector('[data-stats="level"]').textContent = `Lv.${userData.level || 1}`;
+        }
+        
+        // 绑定事件监听器
+        function bindEventListeners() {
+            // 头像上传
+            document.getElementById('avatar-upload').addEventListener('change', handleAvatarUpload);
+            
+            // 表单提交
+            document.querySelector('form').addEventListener('submit', handleProfileUpdate);
+            
+            // 登出
+            document.getElementById('logout-btn').addEventListener('click', logout);
+        }
+        
+        // 处理头像上传
+        async function handleAvatarUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                showMessage('请选择图片文件', 'error');
+                return;
+            }
+            
+            // 验证文件大小（最大5MB）
+            if (file.size > 5 * 1024 * 1024) {
+                showMessage('图片大小不能超过5MB', 'error');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('/api/users/avatar/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // 更新头像显示
+                    const avatarContainer = document.querySelector('.w-24.h-24');
+                    avatarContainer.innerHTML = `<img src="${result.avatar_url}" alt="头像" class="w-full h-full object-cover">`;
+                    showMessage('头像更新成功', 'success');
+                } else {
+                    showMessage(result.detail || '头像上传失败', 'error');
+                }
+            } catch (error) {
+                console.error('头像上传失败:', error);
+                showMessage('网络错误，请稍后重试', 'error');
+            }
+        }
+        
+        // 处理资料更新
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const userData = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                bio: formData.get('bio')
+            };
+            
+            // 如果填写了新密码，则需要当前密码
+            const currentPassword = formData.get('current_password');
+            const newPassword = formData.get('new_password');
+            
+            if (newPassword && !currentPassword) {
+                showMessage('修改密码需要输入当前密码', 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '保存中...';
+            
+            try {
+                const response = await fetch('/api/users/me', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage('资料更新成功', 'success');
+                    // 更新显示的用户信息
+                    displayUserInfo(result);
+                } else {
+                    showMessage(result.detail || '更新失败', 'error');
+                }
+            } catch (error) {
+                console.error('更新资料失败:', error);
+                showMessage('网络错误，请稍后重试', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+        
+        // 登出
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('token_expiry');
+                window.location.href = '/';
+            }
+        }
+        
+        // 显示消息
+        function showMessage(message, type) {
+            // 移除现有的消息
+            const existingMessage = document.querySelector('.message-alert');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            // 创建新的消息元素
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message-alert fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+                type === 'success' 
+                    ? 'bg-green-100 border border-green-400 text-green-700' 
+                    : 'bg-red-100 border border-red-400 text-red-700'
+            }`;
+            messageDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fa ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(messageDiv);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 3000);
+        }
+    </script>
